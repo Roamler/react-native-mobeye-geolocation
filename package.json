@@ -1,0 +1,42 @@
+{
+  "name": "react-native-mobeye-geolocation",
+  "title": "React Native Mobeye Geolocation",
+  "version": "1.0.0",
+  "description": "Geolocation Mobeye",
+  "main": "index.js",
+  "files": [
+    "README.md",
+    "android",
+    "index.js",
+    "ios",
+    "react-native-mobeye-geolocation.podspec"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mobeye/react-native-mobeye-geolocation.git",
+    "baseUrl": "https://github.com/Mobeye/react-native-mobeye-geolocation"
+  },
+  "keywords": [
+    "react-native",
+    "geolocation"
+  ],
+  "author": {
+    "name": "Mobeye",
+    "company": "Mobeye"
+  },
+  "license": "MIT",
+  "licenseFilename": "LICENSE",
+  "readmeFilename": "README.md",
+  "devDependencies": {
+    "@react-native-community/bob": "^0.16.2",
+    "react": "16.11.0",
+    "react-native": "0.62.2"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  }
+}
