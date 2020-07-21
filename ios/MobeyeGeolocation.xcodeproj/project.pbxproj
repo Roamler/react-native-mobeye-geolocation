@@ -7,10 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		27AD983224ACCBB6009C7CB5 /* MobeyeGeolocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AD983124ACCBB6009C7CB5 /* MobeyeGeolocation.swift */; };
-		27AD983424ACCBF8009C7CB5 /* MobeyeGeolocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 27AD983324ACCBF8009C7CB5 /* MobeyeGeolocation.m */; };
-		27AD983824ACCCE0009C7CB5 /* RingBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AD983724ACCCE0009C7CB5 /* RingBuffer.swift */; };
-		27AD983A24AE0398009C7CB5 /* MyLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AD983924AE0398009C7CB5 /* MyLocation.swift */; };
+		270339E224C5FE3900E01D06 /* utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270339DB24C5FE3900E01D06 /* utils.swift */; };
+		270339E324C5FE3900E01D06 /* RingBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270339DC24C5FE3900E01D06 /* RingBuffer.swift */; };
+		270339E424C5FE3900E01D06 /* MobeyeGeolocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270339DD24C5FE3900E01D06 /* MobeyeGeolocation.swift */; };
+		270339E524C5FE3900E01D06 /* MyLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270339DE24C5FE3900E01D06 /* MyLocation.swift */; };
+		270339E824C5FE9C00E01D06 /* MobeyeGeolocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 270339E724C5FE9C00E01D06 /* MobeyeGeolocation.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,10 +28,12 @@
 
 /* Begin PBXFileReference section */
 		134814201AA4EA6300B7C361 /* libMobeyeGeolocation.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMobeyeGeolocation.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		27AD983124ACCBB6009C7CB5 /* MobeyeGeolocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobeyeGeolocation.swift; sourceTree = "<group>"; };
-		27AD983324ACCBF8009C7CB5 /* MobeyeGeolocation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MobeyeGeolocation.m; sourceTree = "<group>"; };
-		27AD983724ACCCE0009C7CB5 /* RingBuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingBuffer.swift; sourceTree = "<group>"; };
-		27AD983924AE0398009C7CB5 /* MyLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyLocation.swift; sourceTree = "<group>"; };
+		270339DB24C5FE3900E01D06 /* utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = utils.swift; sourceTree = "<group>"; };
+		270339DC24C5FE3900E01D06 /* RingBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RingBuffer.swift; sourceTree = "<group>"; };
+		270339DD24C5FE3900E01D06 /* MobeyeGeolocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MobeyeGeolocation.swift; sourceTree = "<group>"; };
+		270339DE24C5FE3900E01D06 /* MyLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyLocation.swift; sourceTree = "<group>"; };
+		270339E124C5FE3900E01D06 /* MobeyeGeolocation-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MobeyeGeolocation-Bridging-Header.h"; sourceTree = "<group>"; };
+		270339E724C5FE9C00E01D06 /* MobeyeGeolocation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MobeyeGeolocation.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,21 +55,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		27AD982F24ACCAFF009C7CB5 /* MobeyeGeolocation */ = {
-			isa = PBXGroup;
-			children = (
-				27AD983124ACCBB6009C7CB5 /* MobeyeGeolocation.swift */,
-				27AD983324ACCBF8009C7CB5 /* MobeyeGeolocation.m */,
-				27AD983724ACCCE0009C7CB5 /* RingBuffer.swift */,
-				27AD983924AE0398009C7CB5 /* MyLocation.swift */,
-			);
-			path = MobeyeGeolocation;
-			sourceTree = "<group>";
-		};
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
-				27AD982F24ACCAFF009C7CB5 /* MobeyeGeolocation */,
+				270339E724C5FE9C00E01D06 /* MobeyeGeolocation.m */,
+				270339E124C5FE3900E01D06 /* MobeyeGeolocation-Bridging-Header.h */,
+				270339DD24C5FE3900E01D06 /* MobeyeGeolocation.swift */,
+				270339DE24C5FE3900E01D06 /* MyLocation.swift */,
+				270339DC24C5FE3900E01D06 /* RingBuffer.swift */,
+				270339DB24C5FE3900E01D06 /* utils.swift */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -129,10 +126,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27AD983224ACCBB6009C7CB5 /* MobeyeGeolocation.swift in Sources */,
-				27AD983424ACCBF8009C7CB5 /* MobeyeGeolocation.m in Sources */,
-				27AD983A24AE0398009C7CB5 /* MyLocation.swift in Sources */,
-				27AD983824ACCCE0009C7CB5 /* RingBuffer.swift in Sources */,
+				270339E424C5FE3900E01D06 /* MobeyeGeolocation.swift in Sources */,
+				270339E224C5FE3900E01D06 /* utils.swift in Sources */,
+				270339E524C5FE3900E01D06 /* MyLocation.swift in Sources */,
+				270339E824C5FE9C00E01D06 /* MobeyeGeolocation.m in Sources */,
+				270339E324C5FE3900E01D06 /* RingBuffer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,7 +263,6 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = MobeyeGeolocation;
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "MobeyeGeolocation/MobeyeGeolocation-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
@@ -286,7 +283,6 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = MobeyeGeolocation;
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "MobeyeGeolocation/MobeyeGeolocation-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
