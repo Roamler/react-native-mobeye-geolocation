@@ -6,9 +6,9 @@
  *
  * @format
  */
-import { PermissionStatus } from "react-native";
+import { EventSubscriptionVendor, PermissionStatus } from 'react-native';
 
-export interface GeolocationNativeModule {
+export interface GeolocationNativeModule extends EventSubscriptionVendor{
     /* Initiate the location provider */
     initiateLocation: () => Promise<void>;
 

@@ -11,5 +11,3 @@
 
 // required only for Event Emitters
 #import "React/RCTEventEmitter.h"
-
-

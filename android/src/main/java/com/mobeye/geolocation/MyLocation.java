@@ -2,6 +2,8 @@ package com.mobeye.geolocation;
 
 import android.location.Location;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -68,5 +70,14 @@ public class MyLocation {
     public String toString(){
         return this.getProvider() + ": " + this.getLatitude() + ", " + this.getLongitude()
                 + " acc: " + this.getAccuracy() + " time: " + this.getTime();
+    }
+
+    public WritableMap toMap(){
+        WritableMap locationMap = Arguments.createMap();
+        locationMap.putDouble("longitude", this.getLongitude());
+        locationMap.putDouble("latitude", this.getLatitude());
+        locationMap.putDouble("accuracy", this.getAccuracy());
+        locationMap.putDouble("time", this.getTime());
+        return locationMap;
     }
 }

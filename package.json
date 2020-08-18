@@ -17,7 +17,7 @@
     "react-native-mobeye-geolocation.podspec"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "react-native start",
     "prepare": "bob build"
   },
   "repository": {
@@ -41,20 +41,28 @@
     "react-native": "*"
   },
   "devDependencies": {
+    "@babel/core": "^7.11.0",
+    "@babel/runtime": "^7.11.2",
     "@react-native-community/bob": "^0.16.2",
     "@types/react": "^16.9.43",
     "@types/react-native": "^0.63.1",
+    "@typescript-eslint/eslint-plugin": "^3.8.0",
+    "@typescript-eslint/parser": "^3.8.0",
+    "eslint": "^7.6.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-react": "^7.20.5",
+    "eslint-plugin-react-hooks": "^4.0.8",
+    "eslint-plugin-react-native": "^3.8.1",
+    "metro-react-native-babel-preset": "^0.62.0",
+    "moment": "^2.27.0",
     "prettier": "^2.0.5",
     "react": "16.11.0",
     "react-native": "0.62.2",
     "typescript": "^3.9.5"
   },
-  "dependencies": {
-    "git": "link:../"
-  },
   "react-native": "src/index.ts",
   "module": "lib/module/index.js",
-  "types": "lib/typescript/src/index.d.ts",
+  "types": "lib/typescript/index.d.ts",
   "@react-native-community/bob": {
     "source": "src",
     "output": "lib",
@@ -64,10 +72,6 @@
       "typescript"
     ]
   },
-  "eslintIgnore": [
-    "node_modules/",
-    "lib/"
-  ],
   "prettier": {
     "arrowParens": "always",
     "tabWidth": 4,

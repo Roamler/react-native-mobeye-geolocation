@@ -7,8 +7,9 @@
  * @format
  */
 import MobeyeGeolocation from './nativeModule';
-import { Location } from './types';
-import { PermissionStatus } from 'react-native';
+import { Location, LocationEvent } from './types';
+import { NativeEventEmitter, PermissionStatus } from 'react-native';
+import { useEffect, useState } from 'react';
 
 /**
  * Start location service
@@ -42,4 +43,37 @@ export function checkIOSLocationAuthorization(): Promise<boolean> {
  */
 export function requestIOSLocationAuthorizatrion(): Promise<PermissionStatus> {
     return MobeyeGeolocation.askForPermission();
+}
+
+/* Native event emitter to catch geolocations event */
+export const locationEmitter = new NativeEventEmitter(MobeyeGeolocation);
+
+/**
+ * A React Hook which updates when the location significantly changes.
+ */
+export function useLocation(initService: boolean): Location {
+    if (initService) {
+        initiateLocation();
+    }
+
+    const [location, setLocation] = useState<Location>({
+        latitude: -1,
+        longitude: -1,
+        accuracy: Number.MAX_SAFE_INTEGER,
+        time: 0,
+    });
+
+    useEffect(() => {
+        const subscription = locationEmitter.addListener(
+            'LOCATION_UPDATED',
+            (result: LocationEvent) => {
+                if (result.success) {
+                    setLocation(result.payload);
+                }
+            }
+        );
+        return () => subscription.remove();
+    }, [])
+
+    return location;
 }

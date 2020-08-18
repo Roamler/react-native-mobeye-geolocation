@@ -9,6 +9,7 @@ import android.location.Location;
 import android.preference.PreferenceManager;
 
 import com.facebook.react.bridge.ActivityEventListener;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.google.gson.reflect.TypeToken;
@@ -279,7 +280,7 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
             if (this.mLastUsedLocation.distanceTo(newLocation.getLatitude(), newLocation.getLongitude()) > 100) {
                 this.updateLastUsedLocation();
 
-                WritableMap body = new WritableNativeMap();
+                WritableMap body = Arguments.createMap();
                 body.putBoolean("success", true);
                 mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit(LOCATION_UPDATED, body);
@@ -378,9 +379,11 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
             }
 
             boolean significantChange = false;
+            MyLocation lastLocation = null;
             /* for now, setMaxWaitTime is not set so locationResult must have only one location */
             for (Location location : locationResult.getLocations()) {
-                significantChange = addBufferedLocation(new MyLocation(location));
+                lastLocation = new MyLocation(location);
+                significantChange = addBufferedLocation(lastLocation);
             }
 
             /* In background the callback is every 500 meters
@@ -389,11 +392,13 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
                 writeBufferInStore();
             }
 
+            /* Emits event if location changes significantly */
             if (significantChange) {
                 updateLastUsedLocation();
 
-                WritableMap body = new WritableNativeMap();
+                WritableMap body = Arguments.createMap();
                 body.putBoolean("success", true);
+                body.putMap("payload", lastLocation.toMap());
                 mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit(LOCATION_UPDATED, body);
             }
