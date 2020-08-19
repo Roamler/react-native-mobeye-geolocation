@@ -55,7 +55,6 @@ import static androidx.core.content.ContextCompat.checkSelfPermission;
 public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implements LifecycleEventListener,
         ActivityEventListener {
     private static final List<String> NULL_STORE_ARRAY = Arrays.asList("null", "", "[]");
-    private static final int MAX_SIZE = 40;
     private static final Type DEQUE_TYPE = new TypeToken<Deque<MyLocation>>() {
     }.getType();
     private static final Gson GSON = new Gson();
@@ -64,7 +63,8 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
     private ReactContext mReactContext;
     private SharedPreferences preferences;
     /* FIXME use a RingBuffer instead of Deque */
-    private Deque<MyLocation> mBufferedLocations = new ArrayDeque<>(MAX_SIZE);
+    private Deque<MyLocation> mBufferedLocations;
+    private Integer mBufferSize;
     private FusedLocationProviderClient mLocationProvider;
     private LocationRequest mLocationRequest = new LocationRequest();
     private SettingsClient mSettingsClient;
@@ -96,7 +96,9 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      * @param promise a promise that returns the result to the JS code
      */
     @ReactMethod
-    public void initiateLocation(Promise promise) {
+    public void initiateLocation(Integer bufferSize, Promise promise) {
+        this.mBufferSize = bufferSize;
+        this.mBufferedLocations = new ArrayDeque<>(bufferSize);
         /* create provider and get settings client */
         this.mLocationProvider = LocationServices.getFusedLocationProviderClient(
                 getReactApplicationContext());
@@ -353,7 +355,7 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      */
     private Boolean addBufferedLocation(MyLocation location) {
         /* while loop to avoid memory leak */
-        while (mBufferedLocations.size() >= MAX_SIZE) {
+        while (mBufferedLocations.size() >= this.mBufferSize) {
             mBufferedLocations.remove();
         }
         boolean significantChange = true;

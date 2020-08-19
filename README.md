@@ -1,13 +1,26 @@
-# react-native-mobeye-geolocation
+# React Native Mobeye Geolocation
 
+## Table of Contents
+
+- [React Native Mobeye Geolocation](#react-native-mobeye-geolocation)
+  - [Table of Contents](#table-of-contents)
+  - [Getting started](#getting-started)
+  - [General Usage](#general-usage)
 ## Getting started
 
-`$ npm install react-native-mobeye-geolocation --save`
+```bash
+yarn add react-native-mobeye-geolocation
+```
 
-## Usage
+## General Usage
 ```javascript
-import MobeyeGeolocation from 'react-native-mobeye-geolocation';
+import {
+    useLocation,
+    initiateLocation,
+    requestIOSLocationAuthorization,
+} from 'react-native-mobeye-geolocation';
 
-// TODO: What to do with the module?
-MobeyeGeolocation;
+export const App = () => {
+  const location = useLocation();
+};
 ```

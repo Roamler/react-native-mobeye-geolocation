@@ -3,12 +3,12 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, PermissionsAndroid, Platform, StyleSheet, Text, View } from 'react-native';
+import { Button, PermissionsAndroid, PermissionStatus, Platform, StyleSheet, Text, View } from 'react-native';
 import {
     useLocation,
     checkIOSLocationAuthorization,
     initiateLocation,
-    requestIOSLocationAuthorizatrion,
+    requestIOSLocationAuthorization,
 } from 'react-native-mobeye-geolocation';
 import moment from 'moment';
 
@@ -38,7 +38,7 @@ export default function App() {
 
     useEffect(() => {
         if (Platform.OS === 'ios') {
-            checkIOSLocationAuthorization().then((res) => {
+            checkIOSLocationAuthorization().then((res: boolean) => {
                 setPermission(res);
             });
         } else {
@@ -50,7 +50,7 @@ export default function App() {
 
     useEffect(() => {
         if (!prevPermission.current && permission) {
-            initiateLocation();
+            initiateLocation(10);
         }
         prevPermission.current = permission;
     }, [permission]);
@@ -65,7 +65,7 @@ export default function App() {
                 title={'Ask permission'}
                 onPress={() => {
                     if (Platform.OS === 'ios') {
-                        requestIOSLocationAuthorizatrion().then((res) => {
+                        requestIOSLocationAuthorization().then((res: PermissionStatus) => {
                             setPermission(res === 'granted');
                         });
                     } else {

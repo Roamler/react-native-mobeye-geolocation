@@ -38,7 +38,8 @@ class MobeyeGeolocation: RCTEventEmitter {
     - reject: return to the JS code if the promise is rejected.
    */
   @objc
-  func initiateLocation(_ resolve: RCTPromiseResolveBlock,
+  func initiateLocation(_ bufferSize: NSInteger,
+                        resolver resolve: RCTPromiseResolveBlock,
                         rejecter reject: RCTPromiseRejectBlock) -> Void
   {
     /* Set foreground options and start the service */

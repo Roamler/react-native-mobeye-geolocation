@@ -14,8 +14,8 @@ import { useEffect, useState } from 'react';
 /**
  * Start location service
  */
-export function initiateLocation(): void {
-    MobeyeGeolocation.initiateLocation();
+export function initiateLocation(bufferSize: number): void {
+    MobeyeGeolocation.initiateLocation(bufferSize);
 }
 
 /**
@@ -41,7 +41,7 @@ export function checkIOSLocationAuthorization(): Promise<boolean> {
  * Request location authorization for iOS.
  * To request for android just use AndroidPermissions
  */
-export function requestIOSLocationAuthorizatrion(): Promise<PermissionStatus> {
+export function requestIOSLocationAuthorization(): Promise<PermissionStatus> {
     return MobeyeGeolocation.askForPermission();
 }
 
@@ -51,9 +51,9 @@ export const locationEmitter = new NativeEventEmitter(MobeyeGeolocation);
 /**
  * A React Hook which updates when the location significantly changes.
  */
-export function useLocation(initService: boolean): Location {
+export function useLocation(initService: boolean,  bufferSize = 10): Location {
     if (initService) {
-        initiateLocation();
+        initiateLocation(bufferSize);
     }
 
     const [location, setLocation] = useState<Location>({

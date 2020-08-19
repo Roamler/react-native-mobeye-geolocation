@@ -10,7 +10,7 @@ import { EventSubscriptionVendor, PermissionStatus } from 'react-native';
 
 export interface GeolocationNativeModule extends EventSubscriptionVendor{
     /* Initiate the location provider */
-    initiateLocation: () => Promise<void>;
+    initiateLocation: (bufferSize: number) => Promise<void>;
 
     /* Get the `n` last computed geolocation
     * return the list of Location object as string
