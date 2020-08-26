@@ -4,12 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, PermissionsAndroid, PermissionStatus, Platform, StyleSheet, Text, View } from 'react-native';
-import {
-    useLocation,
-    checkIOSLocationAuthorization,
-    initiateLocation,
-    requestIOSLocationAuthorization,
-} from 'react-native-mobeye-geolocation';
+import Geolocation, { useLocation } from 'react-native-mobeye-geolocation';
 import moment from 'moment';
 
 const styles = StyleSheet.create({
@@ -37,8 +32,9 @@ export default function App() {
     const location = useLocation();
 
     useEffect(() => {
+        Geolocation.configuration(10, 1000, "BalancedPower")
         if (Platform.OS === 'ios') {
-            checkIOSLocationAuthorization().then((res: boolean) => {
+            Geolocation.checkIOSAuthorization().then((res: boolean) => {
                 setPermission(res);
             });
         } else {
@@ -50,7 +46,7 @@ export default function App() {
 
     useEffect(() => {
         if (!prevPermission.current && permission) {
-            initiateLocation(10);
+            Geolocation.start();
         }
         prevPermission.current = permission;
     }, [permission]);
@@ -65,7 +61,7 @@ export default function App() {
                 title={'Ask permission'}
                 onPress={() => {
                     if (Platform.OS === 'ios') {
-                        requestIOSLocationAuthorization().then((res: PermissionStatus) => {
+                        Geolocation.requestIOSAuthorization().then((res: PermissionStatus) => {
                             setPermission(res === 'granted');
                         });
                     } else {
@@ -79,6 +75,12 @@ export default function App() {
             <Text style={styles.instructions}>Longitude: {String(location.longitude)}</Text>
             <Text style={styles.instructions}>Accuracy: {String(location.accuracy)}</Text>
             <Text style={styles.instructions}>Date: {date.format('MM/DD/YYYY hh:mm')}</Text>
+            <Button title={'Balanced Power and Accuracy'} onPress={() => {
+                Geolocation.stopBestAccuracyLocation()
+            }}/>
+            <Button title={'Best Accuracy'} onPress={() => {
+                Geolocation.startBestAccuracyLocation(50)
+            }}/>
         </View>
     );
 }

@@ -11,12 +11,8 @@ import { Location, LocationEvent } from './types';
 import { NativeEventEmitter, PermissionStatus } from 'react-native';
 import { useEffect, useState } from 'react';
 
-/**
- * Start location service
- */
-export function initiateLocation(bufferSize: number): void {
-    MobeyeGeolocation.initiateLocation(bufferSize);
-}
+/* get native module */
+const { configuration, start, startBestAccuracyLocation, stopBestAccuracyLocation } = MobeyeGeolocation;
 
 /**
  * Get last `n` last locations computed by the service.
@@ -30,10 +26,17 @@ export function getLastLocations(n: number): Promise<[Location]> {
 }
 
 /**
+ * Get last location computed by the service.
+ */
+export function getLastLocation(): Promise<Location> {
+    return getLastLocations(1).then((res) => res[0]);
+}
+
+/**
  * Check location authorization for iOS.
  * To check for android just use AndroidPermissions
  */
-export function checkIOSLocationAuthorization(): Promise<boolean> {
+export function checkIOSAuthorization(): Promise<boolean> {
     return MobeyeGeolocation.checkPermission();
 }
 
@@ -41,7 +44,7 @@ export function checkIOSLocationAuthorization(): Promise<boolean> {
  * Request location authorization for iOS.
  * To request for android just use AndroidPermissions
  */
-export function requestIOSLocationAuthorization(): Promise<PermissionStatus> {
+export function requestIOSAuthorization(): Promise<PermissionStatus> {
     return MobeyeGeolocation.askForPermission();
 }
 
@@ -51,10 +54,7 @@ export const locationEmitter = new NativeEventEmitter(MobeyeGeolocation);
 /**
  * A React Hook which updates when the location significantly changes.
  */
-export function useLocation(initService: boolean,  bufferSize = 10): Location {
-    if (initService) {
-        initiateLocation(bufferSize);
-    }
+export function useLocation(): Location {
 
     const [location, setLocation] = useState<Location>({
         latitude: -1,
@@ -64,16 +64,28 @@ export function useLocation(initService: boolean,  bufferSize = 10): Location {
     });
 
     useEffect(() => {
-        const subscription = locationEmitter.addListener(
-            'LOCATION_UPDATED',
-            (result: LocationEvent) => {
-                if (result.success) {
-                    setLocation(result.payload);
-                }
+        /* get last known use position */
+        getLastLocation().then((res) => setLocation(res));
+
+        /* subscribe to the listener */
+        const subscription = locationEmitter.addListener('LOCATION_UPDATED', (result: LocationEvent) => {
+            if (result.success) {
+                setLocation(result.payload);
             }
-        );
+        });
         return () => subscription.remove();
-    }, [])
+    }, []);
 
     return location;
 }
+
+export default {
+    configuration,
+    start,
+    startBestAccuracyLocation,
+    stopBestAccuracyLocation,
+    getLastLocation,
+    getLastLocations,
+    checkIOSAuthorization,
+    requestIOSAuthorization,
+};

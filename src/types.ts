@@ -16,6 +16,11 @@ export enum LocationError {
     headingFailure= 3, // heading could not be determined because of strong interference from nearby magnetic fields
 }
 
+/**
+ *
+ */
+export type AccuracyLevel = "PowerSaving" | "BalancedPower" | "BestAccuracy" | "NavigationAccuracy";
+
 export type Location = {
     latitude: number;
     longitude: number;

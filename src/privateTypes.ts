@@ -7,19 +7,33 @@
  * @format
  */
 import { EventSubscriptionVendor, PermissionStatus } from 'react-native';
+import { AccuracyLevel } from './types';
 
 export interface GeolocationNativeModule extends EventSubscriptionVendor{
-    /* Initiate the location provider */
-    initiateLocation: (bufferSize: number) => Promise<void>;
+    /* configure the location service */
+    configuration: (
+        bufferSize: number,
+        distance: number,
+        accuracy: AccuracyLevel,
+    ) => Promise<boolean>;
+
+    /* start the location service */
+    start: () => void;
 
     /* Get the `n` last computed geolocation
-    * return the list of Location object as string
-    * */
-    getLastLocations: (n: number) => Promise<string>;
+     * return the list of Location object as string
+     */
+    getLastLocations: (number: number) => Promise<string>;
+
+    /* Set the provider to get the best location */
+    startBestAccuracyLocation: (distance: number) => void;
+
+    /* Reset the provider to configure options */
+    stopBestAccuracyLocation: () => void;
 
     /* Check the ios geolocation authorization */
     checkPermission: () => Promise<boolean>;
 
-    /* request the ios geolocation authorization */
+    /* Request the ios geolocation authorization */
     askForPermission: () => Promise<PermissionStatus>;
 }

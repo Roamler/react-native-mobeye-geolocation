@@ -15,11 +15,12 @@ import CoreLocation
  */
 @objc(MobeyeGeolocation)
 class MobeyeGeolocation: RCTEventEmitter {
-  private static let maxSize = 40
   private let locationManager = CLLocationManager()
   var resolver: RCTPromiseResolveBlock!
   var lastUsedLocation: MyLocation!
-  var locationBuffer = RingBuffer<MyLocation>(MobeyeGeolocation.maxSize)
+  var locationBuffer: RingBuffer<MyLocation>!
+  var distanceFilter: CLLocationDistance!
+  var desiredAccuracy: CLLocationAccuracy!
   var isBackground = false
   
   override static func requiresMainQueueSetup() -> Bool {
@@ -29,48 +30,77 @@ class MobeyeGeolocation: RCTEventEmitter {
   override func supportedEvents() -> [String]! {
     return ["LOCATION_UPDATED"]
   }
-  
+
   /**
-   Initiate the location provider.
-   
-   - Parameters:
-    - resolve: a promise that returns the result to the JS code
-    - reject: return to the JS code if the promise is rejected.
+   /**
+    Configure the location provider.
+    
+    - Parameters:
+     - bufferSize: ring buffer size to stock previous location.
+     - distance: minimum distance before an update event is generated.
+     - accuracy: string in `LevelAccuracy`.
+     - resolve: a promise that returns the result to the JS code
+     - reject: return to the JS code if the promise is rejected.
+    */
    */
   @objc
-  func initiateLocation(_ bufferSize: NSInteger,
-                        resolver resolve: RCTPromiseResolveBlock,
-                        rejecter reject: RCTPromiseRejectBlock) -> Void
+  func configuration(
+    _ bufferSize: NSInteger,
+    distanceFilter distance: NSInteger,
+    accuracyLevel accuracy: NSString,
+    resolver resolve: RCTPromiseResolveBlock,
+    rejecter reject: RCTPromiseRejectBlock
+  ) -> Void {
+    if let locationAccuracy = LocationAccuracyDict[accuracy as String] {
+      
+      /* save desired options */
+      self.distanceFilter = CLLocationDistance(distance)
+      self.desiredAccuracy = locationAccuracy
+      
+      /* set service options */
+      self.locationManager.distanceFilter = self.distanceFilter
+      self.locationManager.desiredAccuracy = self.desiredAccuracy
+      self.locationManager.delegate = self
+      
+      /* create RingBuffer */
+      self.locationBuffer = RingBuffer<MyLocation>(bufferSize)
+      
+      /* get stored data */
+      let storedLocations = UserDefaults.standard.string(forKey: "location")
+      let decoder = JSONDecoder()
+      var jsonData: Data
+      if (storedLocations != nil) {
+        /* Initiate the ring buffer with stored locations */
+        jsonData = storedLocations!.data(using: .utf8)!
+        let locationsArray = try! decoder.decode([MyLocation].self, from: jsonData)
+        self.locationBuffer = try! RingBuffer<MyLocation>(bufferSize, array: locationsArray)
+      }
+      let storedLastUsedLocation = UserDefaults.standard.string(forKey: "lastUsedLocation")
+      if (storedLastUsedLocation != nil) {
+        jsonData = storedLastUsedLocation!.data(using: .utf8)!
+        self.lastUsedLocation = try! decoder.decode(MyLocation.self, from: jsonData)
+      }
+      
+      /* listen life cycle */
+      NotificationCenter.default.addObserver(self, selector:#selector(backgroundActivity(notification:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
+      NotificationCenter.default.addObserver(self, selector:#selector(foregroundActivity(notification:)), name: UIApplication.willEnterForegroundNotification, object: nil)
+
+      resolve(true)
+    } else {
+      let err = GeolocationError.BAD_ACCURACY_OPTION
+      reject(err.info.code, err.info.description, nil)
+    }
+  }
+  
+  /**
+   Start the location provider.
+   */
+  @objc
+  func start() -> Void
   {
-    /* Set foreground options and start the service */
-    self.locationManager.distanceFilter = 20
-    self.locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-    self.locationManager.delegate = self
     self.locationManager.startUpdatingLocation()
-    
     /* set background location updates */
     self.locationManager.pausesLocationUpdatesAutomatically = false
-    
-    /* listen life cycle */
-    NotificationCenter.default.addObserver(self, selector:#selector(backgroundActivity(notification:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
-    NotificationCenter.default.addObserver(self, selector:#selector(foregroundActivity(notification:)), name: UIApplication.willEnterForegroundNotification, object: nil)
-    
-    /* get stored data */
-    let storedLocations = UserDefaults.standard.string(forKey: "location")
-    let decoder = JSONDecoder()
-    var jsonData: Data
-    if (storedLocations != nil) {
-      /* Initiate the ring buffer with stored locations */
-      jsonData = storedLocations!.data(using: .utf8)!
-      let locationsArray = try! decoder.decode([MyLocation].self, from: jsonData)
-      self.locationBuffer = try! RingBuffer<MyLocation>(MobeyeGeolocation.maxSize, array: locationsArray)
-    }
-    let storedLastUsedLocation = UserDefaults.standard.string(forKey: "lastUsedLocation")
-    if (storedLastUsedLocation != nil) {
-      jsonData = storedLastUsedLocation!.data(using: .utf8)!
-      self.lastUsedLocation = try! decoder.decode(MyLocation.self, from: jsonData)
-    }
-    resolve(nil)
   }
   
   /**
@@ -88,6 +118,15 @@ class MobeyeGeolocation: RCTEventEmitter {
   {
     var locationList: [MyLocation] = []
     var i = 0
+    
+    /* check if the provider is configured */
+    if (self.locationBuffer == nil) {
+      let err = GeolocationError.LOCATION_NOT_CONFIGURED
+      reject(err.info.code, err.info.description, nil)
+      return
+    }
+    
+    /* fill the location list with last locations */
     for location in self.locationBuffer {
       if (i >= number) {
         break
@@ -95,14 +134,38 @@ class MobeyeGeolocation: RCTEventEmitter {
       locationList.append(location)
       i += 1
     }
+    
+    /* location list cannot be empty normaly */
     if (locationList.isEmpty) {
-      let err = BusinessError.LOCATION
+      let err = GeolocationError.LOCATION
       reject(err.info.code, err.info.description, nil)
+      return
     }
     var stringDict: String!
     let data = try! JSONEncoder().encode(locationList)
     stringDict = String(data: data, encoding: String.Encoding.utf8) ?? ""
     resolve(stringDict)
+  }
+  
+  /**
+   Set provider options for best accuracy.
+   Be careful those options will drain the battery.
+   */
+  @objc
+  func startBestAccuracyLocation(_ distance: NSInteger) -> Void
+  {
+    self.locationManager.distanceFilter = CLLocationDistance(distance)
+    self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+  }
+  
+  /*
+   Set the service to balanced power and accuracy.
+   */
+  @objc
+  func stopBestAccuracyLocation() -> Void
+  {
+    self.locationManager.distanceFilter = self.distanceFilter
+    self.locationManager.desiredAccuracy = self.desiredAccuracy
   }
   
   /**
@@ -136,6 +199,13 @@ class MobeyeGeolocation: RCTEventEmitter {
   func askForPermission(_ resolve: @escaping RCTPromiseResolveBlock,
                          rejecter reject: RCTPromiseRejectBlock) -> Void
   {
+    /* check if the provider is configured */
+    if (self.locationBuffer == nil) {
+      let err = GeolocationError.LOCATION_NOT_CONFIGURED
+      reject(err.info.code, err.info.description, nil)
+      return
+    }
+    
     /* Request authorization */
     switch CLLocationManager.authorizationStatus() {
     case .notDetermined:
@@ -164,7 +234,8 @@ class MobeyeGeolocation: RCTEventEmitter {
   /**
    Method executed when the app is in background
    */
-  @objc func backgroundActivity(notification: NSNotification){
+  @objc
+  func backgroundActivity(notification: NSNotification){
     self.writeBufferInStore()
     self.setBackgroundOptions()
     self.isBackground = true

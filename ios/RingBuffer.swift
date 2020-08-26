@@ -22,11 +22,10 @@ public struct RingBuffer<T>: Sequence {
   }
   
   public init(_ size: Int, array a: Array<T>) throws {
-    guard a.count <= size else {
-      throw CustomError.runtimeError("Array size is larger than requested buffer size.")
-    }
+    /* handle the case that the buffer size is changed */
+    let sliceSize = size > a.count ? a.count : size
     array = ContiguousArray<T?>(repeating: nil, count: size)
-    for (i, location) in a.enumerated() {
+    for (i, location) in a[..<sliceSize].enumerated() {
       array[i] = location
     }
     writeIndex = a.count
