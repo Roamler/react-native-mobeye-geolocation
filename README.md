@@ -1,11 +1,10 @@
 # React Native Mobeye Geolocation
 
-React Native Geolocation API for Android and iOS. It allows to get information on geolocation on foreground and background.
+React Native Geolocation API for Android and iOS. It allows to get geolocation as well in background as in foreground.
 
 ## Table of Contents
 
 - [React Native Mobeye Geolocation](#react-native-mobeye-geolocation)
-  - [Table of Contents](#table-of-contents)
   - [Getting started](#getting-started)
   - [General Usage](#general-usage)
   - [API](#API)
@@ -75,6 +74,15 @@ export const App = () => {
 
 ### Types
 
+#### `LocationConfiguration`
+The configuration options for the library:
+
+| Property          | Type                              | Description |
+| ----------------- | --------------------------------- | ----------- |
+| `distanceFilter`  | `number`                          | The minimum distance in meters a device must move before an update event is generated. |
+| `desiredAccuracy` | [`AccuracyLevel`](#accuracylevel) | The accuracy of the location data that your app wants to receive. |
+| `bufferSize`      | `number`                          | The number of previous computed location keeps in memory. |
+
 #### `AccuracyLevel`
 Describes different accuracy level available:
 
@@ -85,20 +93,10 @@ Describes different accuracy level available:
 | `'BestAccuracy'`       | Provides the most accurate location possible, which is computed using as many inputs as necessary and may cause significant battery drain. |
 | `'NavigationAccuracy'` | This level of accuracy is intended for use in navigation apps that require precise position information at all times. |
 
-Note that the `NavigationAccuracy` and `BestAccuracy` have the same effect on Android and `NavigationAccuracy` is usable only if the phone is plugged in.
-
-
-#### `LocationConfiguration`
-The configuration options for the library:
-
-| Property          | Type                              | Description |
-| ----------------- | --------------------------------- | ----------- |
-| `distanceFilter`  | `number`                          | The minimum distance in meters a device must move horizontally before an update event is generated. |
-| `desiredAccuracy` | [`AccuracyLevel`](#accuracylevel) | The accuracy of the location data that your app wants to receive. |
-| `bufferSize`      | `number`                          | The number of previous computed location keeps in memory. |
+Note that the `NavigationAccuracy` and `BestAccuracy` have the same effect on Android and that `NavigationAccuracy` is usable only if the phone is plugged in.
 
 #### `Location`
-Describes a computed location:
+Describe a computed location:
 
 | Property    | Type     | Description |
 | ----------- | -------- | ----------- |
@@ -118,12 +116,11 @@ You can encounter some errors that are described in this table:
 | `4`  | `INVALID_CONFIGURATION`        | The requested configuration is not valid. |
 | `5`  | `UNKNOWN_AUTHORIZATION_STATUS` | Apple may add new authorizations that are unknown. |
 
-
 ### Methods
 
 #### `configure()`
 
-Configure the library with the given configuration and instantiate the provider service. You only need to supply the properties which you want to change from the default values. Any other methods will not work if the service is not instantiate. This method can be called only once.
+Configure the library with the given configuration and instantiate the provider service. You only need to supply the properties you want to change from the default values. Any other methods will not work if the service is not instantiated. This method can be called only once.
 
 *Example:*
 ```javascript
@@ -136,7 +133,7 @@ Geolocation.configure({
 
 #### `start()`
 
-Start the service using options defined with [`configure()`](#configure) method. The module sends `'LOCATION_UPDATED'` event when a new computed location has changed significantly. Locations are also computed in background.
+Start the service using options defined with [`configure()`](#configure). The module sends a `'LOCATION_UPDATED'` event when a new computed location has changed significantly. Locations are also computed in background.
 
 *Example:*
 ```javascript
@@ -171,8 +168,8 @@ Return a `Promise` that gets last locations saved in the buffer. You can optiona
 ```javascript
 Geolocation.getLastLocation(10).then(locations => {
   const lastLocation = locations[0];
-  console.log("Latitude", locations.latitude);
-  console.log("Longitude", locations.longitude);
+  console.log("Latitude", lastLocation.latitude);
+  console.log("Longitude", lastLocation.longitude);
 })
 ```
 
@@ -203,11 +200,11 @@ const YourComponent = () => {
 }
 ```
 
-> :warning: In the futur, Apple may add new authorizations. In this case, the `Promise` will be reject with the code error `5`. Do not hesitate to create a pull request to add the new authorization.
+> :warning: In the futur, Apple may add new authorizations. In this case, the `Promise` will be rejected with the code error `5`. Do not hesitate to create a pull request to add the new authorization.
 
 #### `requestIOSAuthorization()`
 
-Requests the geolocation permission for ios. Returns a `Promise` that resolves to a [`PermissionStatus`](https://reactnative.dev/docs/permissionsandroid#result-strings-for-requesting-permissions). The [`configure`]() method must be called before the request because if the user authorizes geolocation the service will start automatically.
+Requests the geolocation permission for ios. Returns a `Promise` that resolves to a [`PermissionStatus`](https://reactnative.dev/docs/permissionsandroid#result-strings-for-requesting-permissions). [`configure`](#configure) must be called before this method since the service will start on its own if the user set the geolocation permission.
 
 ```javascript
 import { useEffect } from 'react';
