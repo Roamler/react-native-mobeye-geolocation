@@ -17,9 +17,15 @@ export enum LocationError {
 }
 
 /**
- *
+ * Different types of accuracy
  */
 export type AccuracyLevel = "PowerSaving" | "BalancedPower" | "BestAccuracy" | "NavigationAccuracy";
+
+export type LocationConfiguration = {
+    bufferSize: number,
+    distanceFilter: number,
+    desiredAccuracy: AccuracyLevel,
+}
 
 export type Location = {
     latitude: number;

@@ -7,14 +7,12 @@
  * @format
  */
 import { EventSubscriptionVendor, PermissionStatus } from 'react-native';
-import { AccuracyLevel } from './types';
+import { LocationConfiguration } from './types';
 
 export interface GeolocationNativeModule extends EventSubscriptionVendor{
     /* configure the location service */
-    configuration: (
-        bufferSize: number,
-        distance: number,
-        accuracy: AccuracyLevel,
+    configure: (
+        configuration: LocationConfiguration
     ) => Promise<boolean>;
 
     /* start the location service */

@@ -17,7 +17,7 @@ class MyLocation: NSObject, Codable {
   let accuracy: Double
   let time: Double
   
-  enum CodingKeys:String,CodingKey
+  enum CodingKeys:String, CodingKey
   {
     case latitude
     case longitude

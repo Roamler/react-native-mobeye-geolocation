@@ -7,12 +7,23 @@
  * @format
  */
 import MobeyeGeolocation from './nativeModule';
-import { Location, LocationEvent } from './types';
+import DEFAULT_CONFIGURATION from './defaultConfiguration';
+import { Location, LocationConfiguration, LocationEvent } from './types';
 import { NativeEventEmitter, PermissionStatus } from 'react-native';
 import { useEffect, useState } from 'react';
 
 /* get native module */
-const { configuration, start, startBestAccuracyLocation, stopBestAccuracyLocation } = MobeyeGeolocation;
+const { start, startBestAccuracyLocation, stopBestAccuracyLocation } = MobeyeGeolocation;
+
+/* init default configuration */
+const _configuration: LocationConfiguration = DEFAULT_CONFIGURATION;
+
+export function configure(configuration: Partial<LocationConfiguration>): void {
+    MobeyeGeolocation.configure({
+        ..._configuration,
+        ...configuration
+    })
+}
 
 /**
  * Get last `n` last locations computed by the service.
@@ -23,13 +34,6 @@ export function getLastLocations(n: number): Promise<[Location]> {
         const locations: [Location] = JSON.parse(result);
         return locations;
     });
-}
-
-/**
- * Get last location computed by the service.
- */
-export function getLastLocation(): Promise<Location> {
-    return getLastLocations(1).then((res) => res[0]);
 }
 
 /**
@@ -65,7 +69,8 @@ export function useLocation(): Location {
 
     useEffect(() => {
         /* get last known use position */
-        getLastLocation().then((res) => setLocation(res));
+
+        getLastLocations(1).then((res) => setLocation(res[0]));
 
         /* subscribe to the listener */
         const subscription = locationEmitter.addListener('LOCATION_UPDATED', (result: LocationEvent) => {
@@ -80,11 +85,11 @@ export function useLocation(): Location {
 }
 
 export default {
-    configuration,
+    configure,
     start,
     startBestAccuracyLocation,
     stopBestAccuracyLocation,
-    getLastLocation,
+    locationEmitter,
     getLastLocations,
     checkIOSAuthorization,
     requestIOSAuthorization,

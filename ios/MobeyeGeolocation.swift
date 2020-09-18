@@ -36,34 +36,38 @@ class MobeyeGeolocation: RCTEventEmitter {
     Configure the location provider.
     
     - Parameters:
-     - bufferSize: ring buffer size to stock previous location.
-     - distance: minimum distance before an update event is generated.
-     - accuracy: string in `LevelAccuracy`.
-     - resolve: a promise that returns the result to the JS code
-     - reject: return to the JS code if the promise is rejected.
+      - config: Configuration dictionnary with these keys:
+        - bufferSize: ring buffer size to stock previous location.
+        - distance: minimum distance before an update event is generated.
+        - accuracy: string in `LevelAccuracy`.
+      - resolve: a promise that returns the result to the JS code
+      - reject: return to the JS code if the promise is rejected.
     */
    */
   @objc
-  func configuration(
-    _ bufferSize: NSInteger,
-    distanceFilter distance: NSInteger,
-    accuracyLevel accuracy: NSString,
+  func configure(
+    _ configuration: NSDictionary,
     resolver resolve: RCTPromiseResolveBlock,
     rejecter reject: RCTPromiseRejectBlock
   ) -> Void {
-    if let locationAccuracy = LocationAccuracyDict[accuracy as String] {
+    
+    do {
+      /* get configuration object */
+      let locationConfiguration = try LocationConfiguration(dictionary: configuration)
       
       /* save desired options */
-      self.distanceFilter = CLLocationDistance(distance)
-      self.desiredAccuracy = locationAccuracy
+      self.distanceFilter = CLLocationDistance(locationConfiguration.distanceFilter)
+      self.desiredAccuracy = LocationAccuracyDict[locationConfiguration.desiredAccuracy]
       
       /* set service options */
       self.locationManager.distanceFilter = self.distanceFilter
       self.locationManager.desiredAccuracy = self.desiredAccuracy
       self.locationManager.delegate = self
+      /* set background location updates */
+      self.locationManager.pausesLocationUpdatesAutomatically = false
       
       /* create RingBuffer */
-      self.locationBuffer = RingBuffer<MyLocation>(bufferSize)
+      self.locationBuffer = RingBuffer<MyLocation>(locationConfiguration.bufferSize)
       
       /* get stored data */
       let storedLocations = UserDefaults.standard.string(forKey: "location")
@@ -73,7 +77,7 @@ class MobeyeGeolocation: RCTEventEmitter {
         /* Initiate the ring buffer with stored locations */
         jsonData = storedLocations!.data(using: .utf8)!
         let locationsArray = try! decoder.decode([MyLocation].self, from: jsonData)
-        self.locationBuffer = try! RingBuffer<MyLocation>(bufferSize, array: locationsArray)
+        self.locationBuffer = try! RingBuffer<MyLocation>(locationConfiguration.bufferSize, array: locationsArray)
       }
       let storedLastUsedLocation = UserDefaults.standard.string(forKey: "lastUsedLocation")
       if (storedLastUsedLocation != nil) {
@@ -86,9 +90,10 @@ class MobeyeGeolocation: RCTEventEmitter {
       NotificationCenter.default.addObserver(self, selector:#selector(foregroundActivity(notification:)), name: UIApplication.willEnterForegroundNotification, object: nil)
 
       resolve(true)
-    } else {
-      let err = GeolocationError.BAD_ACCURACY_OPTION
+    } catch {
+      let err = GeolocationError.INVALID_CONFIGURATION
       reject(err.info.code, err.info.description, nil)
+      return
     }
   }
   
@@ -99,8 +104,6 @@ class MobeyeGeolocation: RCTEventEmitter {
   func start() -> Void
   {
     self.locationManager.startUpdatingLocation()
-    /* set background location updates */
-    self.locationManager.pausesLocationUpdatesAutomatically = false
   }
   
   /**
@@ -137,7 +140,7 @@ class MobeyeGeolocation: RCTEventEmitter {
     
     /* location list cannot be empty normaly */
     if (locationList.isEmpty) {
-      let err = GeolocationError.LOCATION
+      let err = GeolocationError.NO_LOCATION_AVAILABLE
       reject(err.info.code, err.info.description, nil)
       return
     }
@@ -219,6 +222,9 @@ class MobeyeGeolocation: RCTEventEmitter {
     case .authorizedAlways, .authorizedWhenInUse:
       resolve(PermissionStatus.GRANTED)
       break
+    @unknown default:
+      let err = GeolocationError.UNKNOWN_AUTHORIZATION_STATUS
+      reject(err.info.code, err.info.description, nil)
     }
   }
   
