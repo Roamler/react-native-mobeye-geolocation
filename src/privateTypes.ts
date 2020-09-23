@@ -24,10 +24,10 @@ export interface GeolocationNativeModule extends EventSubscriptionVendor{
     getLastLocations: (number: number) => Promise<string>;
 
     /* Set the provider to get the best location */
-    startBestAccuracyLocation: (distance: number) => void;
+    setTemporaryConfiguration: (configuration: LocationConfiguration) => Promise<boolean>;
 
     /* Reset the provider to configure options */
-    stopBestAccuracyLocation: () => void;
+    revertTemporaryConfiguration: () => void;
 
     /* Check the ios geolocation authorization */
     checkPermission: () => Promise<boolean>;

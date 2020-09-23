@@ -13,7 +13,7 @@ enum CustomError: Error {
 }
 
 enum GeolocationError: Error {
-  case USER_REJECT_LOCATION
+  case LOCATION_FAILED
   case NO_LOCATION_AVAILABLE
   case LOCATION_NOT_CONFIGURED
   case INVALID_CONFIGURATION
@@ -21,8 +21,8 @@ enum GeolocationError: Error {
 
   var info: (code: String, description: String) {
     switch self {
-    case .USER_REJECT_LOCATION:
-      return (code: "1", description: "User reject geolocation")
+    case .LOCATION_FAILED:
+      return (code: "1", description: "Location service failed")
     case .NO_LOCATION_AVAILABLE:
       return (code: "2", description: "No location in buffer")
     case .LOCATION_NOT_CONFIGURED:

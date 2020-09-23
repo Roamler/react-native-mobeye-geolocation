@@ -69,6 +69,8 @@ export const App = () => {
     - [`configure()`](#configure)
     - [`start()`](#start)
     - [`useLocation()`](#uselocation)
+    - [`setTemporaryConfiguration()`](#settemporaryconfiguration)
+    - [`revertTemporaryConfiguration()`](#reverttemporaryconfiguration)
     - [`checkIOSauthorization()`](#checkiosauthorization)
     - [`requestIOSauthorization()`](#requestiosauthorization)
 
@@ -81,6 +83,7 @@ The configuration options for the library:
 | ----------------- | --------------------------------- | ----------- |
 | `distanceFilter`  | `number`                          | The minimum distance in meters a device must move before an update event is generated. |
 | `desiredAccuracy` | [`AccuracyLevel`](#accuracylevel) | The accuracy of the location data that your app wants to receive. |
+| `updateInterval`  | `number`                          | The rate in milliseconds at which your app prefers to receive location updates. Used only by Android. |
 | `bufferSize`      | `number`                          | The number of previous computed location keeps in memory. |
 
 #### `AccuracyLevel`
@@ -171,6 +174,25 @@ Geolocation.getLastLocation(10).then(locations => {
   console.log("Latitude", lastLocation.latitude);
   console.log("Longitude", lastLocation.longitude);
 })
+```
+
+#### `setTemporaryConfiguration()`
+Sometime you may need to temporary change the accuracy level to have a better user tracking. This method changes on the fly your configuration (except the buffer size).
+
+*Example:*
+```javascript
+Geolocation.setTemporaryConfiguration({
+  distanceFilter: 20,
+  desiredAccuracy: "BestAccuracy"
+})
+```
+
+#### `revertTemporaryConfiguration()`
+Reset configuration with the [`LocationConfiguration`](#locationconfiguration) used with [`configure()`](#configure).
+
+*Example*
+```javascript
+Geolocation.resetTemporaryConfiguration();
 ```
 
 #### `checkIOSAuthorization()`

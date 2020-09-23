@@ -19,8 +19,11 @@ RCT_EXTERN_METHOD(getLastLocations: (nonnull NSInteger)number
                   resolver: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject
 );
-RCT_EXTERN_METHOD(startBestAccuracyLocation: (nonnull NSInteger)distance);
-RCT_EXTERN_METHOD(stopBestAccuracyLocation);
+RCT_EXTERN_METHOD(setTemporaryConfiguration: (nonnull NSDictionary)configuration
+                  resolver: (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject
+                  );
+RCT_EXTERN_METHOD(revertTemporaryConfiguration);
 RCT_EXTERN_METHOD(checkPermission: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject
                   );

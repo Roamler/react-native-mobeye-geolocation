@@ -10,10 +10,8 @@ import android.preference.PreferenceManager;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.WritableNativeMap;
-import com.google.gson.reflect.TypeToken;
-import com.mobeye.geolocation.utils.BusinessError;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -33,7 +31,9 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.gson.Gson;
-import com.mobeye.geolocation.utils.StoreKeys;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayDeque;
@@ -61,24 +61,25 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
     private static String LOCATION_UPDATED = "LOCATION_UPDATED";
 
     private ReactContext mReactContext;
-    private SharedPreferences preferences;
+    private SharedPreferences mPreferences;
     /* FIXME use a RingBuffer instead of Deque */
     private Deque<MyLocation> mBufferedLocations;
-    private Integer mBufferSize;
+    private LocationConfiguration mInitialConfiguration;
+    private LocationConfiguration mCurrentConfiguration;
     private FusedLocationProviderClient mLocationProvider;
     private LocationRequest mLocationRequest = new LocationRequest();
     private SettingsClient mSettingsClient;
     private LocationSettingsRequest mLocationSettingsRequest;
     private MyLocation mLastUsedLocation;
-    private Boolean inBackground;
+    private Boolean mInBackground;
 
     public MobeyeGeolocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        this.mReactContext = reactContext;
-        this.mReactContext.addLifecycleEventListener(this);
-        this.mReactContext.addActivityEventListener(this);
-        this.preferences = PreferenceManager.getDefaultSharedPreferences(reactContext);
-        this.inBackground = false;
+        mReactContext = reactContext;
+        mReactContext.addLifecycleEventListener(this);
+        mReactContext.addActivityEventListener(this);
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(reactContext);
+        mInBackground = false;
     }
 
     /**
@@ -96,18 +97,31 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      * @param promise a promise that returns the result to the JS code
      */
     @ReactMethod
-    public void initiateLocation(Integer bufferSize, Promise promise) {
-        this.mBufferSize = bufferSize;
-        this.mBufferedLocations = new ArrayDeque<>(bufferSize);
+    public void configure(ReadableMap configuration, Promise promise) {
+        JsonElement jsonElement = GSON.toJsonTree(configuration.toHashMap());
+        try {
+            mInitialConfiguration = GSON.fromJson(jsonElement, LocationConfiguration.class);
+        } catch (JsonParseException e) {
+            GeolocationError err = GeolocationError.INVALID_CONFIGURATION;
+            promise.reject(String.valueOf(err.getCode()), err.getDescription());
+            return;
+        }
+        mCurrentConfiguration = mInitialConfiguration;
+        mBufferedLocations = new ArrayDeque<>(mInitialConfiguration.getBufferSize());
         /* create provider and get settings client */
-        this.mLocationProvider = LocationServices.getFusedLocationProviderClient(
+        mLocationProvider = LocationServices.getFusedLocationProviderClient(
                 getReactApplicationContext());
         /* get stored data */
-        this.getStoredData();
+        getStoredData();
         /* define options */
-        this.setLocationOptions();
-        /* check options is coherent with authorisation */
-        this.checkLocationSettings(promise);
+        setLocationOptions();
+    }
+
+    @ReactMethod
+    public void start() {
+        /* check options is coherent with authorisation and start location service */
+        checkLocationSettings();
+        startUpdatingLocation();
     }
 
     /**
@@ -117,8 +131,8 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      */
     @ReactMethod
     public void getLastLocations(Integer number, Promise promise) {
-        if (this.mBufferedLocations == null) {
-            BusinessError err = BusinessError.NO_LOCATION_AVAILABLE;
+        if (mBufferedLocations == null) {
+            GeolocationError err = GeolocationError.NO_LOCATION_AVAILABLE;
             promise.reject(String.valueOf(err.getCode()), err.getDescription());
             return;
         }
@@ -134,21 +148,48 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
         promise.resolve(json);
     }
 
+    @ReactMethod
+    public void setTemporaryConfiguration(ReadableMap configuration, Promise promise) {
+        JsonElement jsonElement = GSON.toJsonTree(configuration.toHashMap());
+        try {
+            mCurrentConfiguration = GSON.fromJson(jsonElement, LocationConfiguration.class);
+        } catch (JsonParseException e) {
+            GeolocationError err = GeolocationError.INVALID_CONFIGURATION;
+            promise.reject(String.valueOf(err.getCode()), err.getDescription());
+            return;
+        }
+        resetLocationProvider();
+        promise.resolve(true);
+    }
+
+    @ReactMethod
+    public void revertTemporaryConfiguration() {
+        mCurrentConfiguration = mInitialConfiguration;
+        resetLocationProvider();
+    }
+
     /**
      * Update the used location by React to provide the mission list.
      * This variable is used to know if the user location has significantly changed.
      */
     private void updateLastUsedLocation() {
         try {
-            this.mLastUsedLocation = this.mBufferedLocations.getLast();
+            mLastUsedLocation = mBufferedLocations.getLast();
         }
         catch (NoSuchElementException e) {
             return;
         }
-        String json = GSON.toJson(this.mLastUsedLocation);
-        SharedPreferences.Editor editor = this.preferences.edit();
+        String json = GSON.toJson(mLastUsedLocation);
+        SharedPreferences.Editor editor = mPreferences.edit();
         editor.putString(StoreKeys.LAST_USED_LOCATION.name(), json);
         editor.apply();
+    }
+
+    private void resetLocationProvider() {
+        stopUpdatingLocation();
+        setLocationOptions();
+        checkLocationSettings();
+        startUpdatingLocation();
     }
 
     /**
@@ -156,33 +197,27 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      */
     @Override
     public void onHostResume() {
-        if (this.mLocationProvider != null) {
-            this.inBackground = false;
-            this.stopUpdatingLocation();
-            this.setLocationOptions();
-            this.checkLocationSettings();
-            this.startUpdatingLocation();
+        if (mLocationProvider != null) {
+            mInBackground = false;
+            resetLocationProvider();
+
         }
     }
 
     /**
      * Method executed when the app is in background.
-     * Not implemented yet.
      */
     @Override
     public void onHostPause() {
         /* the pop-up to accept authorization trigger the pause and save an empty buffer */
-        if (!this.mBufferedLocations.isEmpty()) {
+        if (!mBufferedLocations.isEmpty()) {
             /* save the bufferedLocations in sharedPref */
-            this.writeBufferInStore();
+            writeBufferInStore();
         }
 
         /* change options */
-        this.inBackground = true;
-        this.stopUpdatingLocation();
-        this.setLocationOptions();
-        this.checkLocationSettings();
-        this.startUpdatingLocation();
+        mInBackground = true;
+        resetLocationProvider();
     }
 
     /**
@@ -209,16 +244,15 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      * Option in background use less battery.
      */
     private void setLocationOptions() {
-        if (this.inBackground) {
-            this.mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER);
-            this.mLocationRequest.setInterval(60 * 1000);
-            this.mLocationRequest.setFastestInterval(5 * 1000);
-            this.mLocationRequest.setSmallestDisplacement(500);
+        if (mInBackground) {
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER);
+            mLocationRequest.setInterval(60 * 1000);
+            mLocationRequest.setSmallestDisplacement(500);
         } else {
-            this.mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-            this.mLocationRequest.setInterval(10 * 1000);
-            this.mLocationRequest.setFastestInterval(5 * 1000);
-            this.mLocationRequest.setSmallestDisplacement(20);
+            mLocationRequest.setPriority(
+                    LevelAccuracy.PRIORITY_MAP.get(mCurrentConfiguration.getDesiredAccuracy()));
+            mLocationRequest.setInterval(mCurrentConfiguration.getUpdateInterval());
+            mLocationRequest.setSmallestDisplacement(mCurrentConfiguration.getDistanceFilter());
         }
     }
 
@@ -227,10 +261,10 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      * @param promise a promise that returns the result to the JS code
      */
     private void checkLocationSettings(final Promise promise) {
-        this.checkLocationSettings();
+        checkLocationSettings();
 
-        Task<LocationSettingsResponse> task = this.mSettingsClient
-                .checkLocationSettings(this.mLocationSettingsRequest);
+        Task<LocationSettingsResponse> task = mSettingsClient.checkLocationSettings(
+                mLocationSettingsRequest);
 
         /* On success, start the provider to update the location */
         task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
@@ -248,15 +282,15 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
         task.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                BusinessError err = BusinessError.LOCATION;
+                GeolocationError err = GeolocationError.LOCATION_FAILED;
                 promise.reject(String.valueOf(err.getCode()), err.getDescription());
             }
         });
     }
 
     private void checkLocationSettings() {
-        this.mSettingsClient = LocationServices.getSettingsClient(getReactApplicationContext());
-        this.mLocationSettingsRequest = new LocationSettingsRequest.Builder()
+        mSettingsClient = LocationServices.getSettingsClient(getReactApplicationContext());
+        mLocationSettingsRequest = new LocationSettingsRequest.Builder()
                 .addLocationRequest(mLocationRequest)
                 .build();
     }
@@ -266,21 +300,19 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      */
     private void getStoredData(){
         /* Get information from disk */
-        String locationListString = preferences.getString(StoreKeys.LOCATIONS.name(), "");
+        String locationListString = mPreferences.getString(StoreKeys.LOCATIONS.name(), "");
         if (!NULL_STORE_ARRAY.contains(locationListString)) {
-            this.mBufferedLocations = GSON.fromJson(
+            mBufferedLocations = GSON.fromJson(
                     locationListString,
                     DEQUE_TYPE);
         }
         /* Get last used location */
-        String lastUsedLocation = preferences.getString(StoreKeys.LAST_USED_LOCATION.name(), "");
+        String lastUsedLocation = mPreferences.getString(StoreKeys.LAST_USED_LOCATION.name(), "");
         if (!NULL_STORE_ARRAY.contains(lastUsedLocation)) {
-            this.mLastUsedLocation = GSON.fromJson(
-                    lastUsedLocation,
-                    MyLocation.class);
-            MyLocation newLocation = this.mBufferedLocations.getLast();
-            if (this.mLastUsedLocation.distanceTo(newLocation.getLatitude(), newLocation.getLongitude()) > 100) {
-                this.updateLastUsedLocation();
+            mLastUsedLocation = GSON.fromJson(lastUsedLocation, MyLocation.class);
+            MyLocation newLocation = mBufferedLocations.getLast();
+            if (mLastUsedLocation.distanceTo(newLocation.getLatitude(), newLocation.getLongitude()) > 100) {
+                updateLastUsedLocation();
 
                 WritableMap body = Arguments.createMap();
                 body.putBoolean("success", true);
@@ -295,17 +327,13 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      */
     private void startUpdatingLocation() {
         /* first run the provider may be null */
-        if (this.mLocationProvider == null) {
+        if (mLocationProvider == null) {
             return;
         }
-        int finePermission = checkSelfPermission(
-                mReactContext,
-                Manifest.permission.ACCESS_FINE_LOCATION
-        );
-        int coarsePermission = checkSelfPermission(
-                mReactContext,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-        );
+        int finePermission = checkSelfPermission(mReactContext,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+        int coarsePermission = checkSelfPermission(mReactContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION);
         if (finePermission != PackageManager.PERMISSION_GRANTED
                 && coarsePermission != PackageManager.PERMISSION_GRANTED) {
             /* TODO: Consider calling
@@ -318,11 +346,7 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
              */
             return;
         }
-        this.mLocationProvider.requestLocationUpdates(
-                mLocationRequest,
-                locationCallback,
-                null
-        );
+        mLocationProvider.requestLocationUpdates(mLocationRequest, locationCallback, null);
     }
 
     /**
@@ -330,20 +354,18 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      */
     private void stopUpdatingLocation() {
         /* first run the provider may be null */
-        if (this.mLocationProvider == null) {
+        if (mLocationProvider == null) {
             return;
         }
-        this.mLocationProvider.removeLocationUpdates(locationCallback);
+        mLocationProvider.removeLocationUpdates(locationCallback);
     }
 
     /**
      * Write the buffer in the store.
      */
     private void writeBufferInStore() {
-        String locationListString = GSON.toJson(
-                this.mBufferedLocations,
-                DEQUE_TYPE);
-        SharedPreferences.Editor editor = this.preferences.edit();
+        String locationListString = GSON.toJson(mBufferedLocations, DEQUE_TYPE);
+        SharedPreferences.Editor editor = mPreferences.edit();
         editor.putString(StoreKeys.LOCATIONS.name(), locationListString);
         editor.apply();
     }
@@ -353,19 +375,13 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      * @param location MyLocation object
      * @return boolean that indicates if the user location has significantly change.
      */
-    private Boolean addBufferedLocation(MyLocation location) {
+    private void addBufferedLocation(MyLocation location) {
+        int bufferSize = mInitialConfiguration.getBufferSize();
         /* while loop to avoid memory leak */
-        while (mBufferedLocations.size() >= this.mBufferSize) {
+        while (mBufferedLocations.size() >= bufferSize) {
             mBufferedLocations.remove();
         }
-        boolean significantChange = true;
-        try {
-            significantChange = (this.mLastUsedLocation.distanceTo(location.getLatitude(), location.getLongitude()) >= 100);
-        } catch (NullPointerException e) {
-            /* if no last location nothing to do */
-        }
         mBufferedLocations.add(location);
-        return significantChange;
     }
 
     /**
@@ -380,30 +396,25 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
                 return;
             }
 
-            boolean significantChange = false;
             MyLocation lastLocation = null;
             /* for now, setMaxWaitTime is not set so locationResult must have only one location */
             for (Location location : locationResult.getLocations()) {
                 lastLocation = new MyLocation(location);
-                significantChange = addBufferedLocation(lastLocation);
+                addBufferedLocation(lastLocation);
             }
 
             /* In background the callback is every 500 meters
              * All background new location must be saved */
-            if (inBackground) {
+            if (mInBackground) {
                 writeBufferInStore();
             }
 
-            /* Emits event if location changes significantly */
-            if (significantChange) {
-                updateLastUsedLocation();
-
-                WritableMap body = Arguments.createMap();
-                body.putBoolean("success", true);
-                body.putMap("payload", lastLocation.toMap());
-                mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                        .emit(LOCATION_UPDATED, body);
-            }
+            /* Emits event with lastLocation */
+            WritableMap body = Arguments.createMap();
+            body.putBoolean("success", true);
+            body.putMap("payload", lastLocation.toMap());
+            mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit(LOCATION_UPDATED, body);
         }
     };
 }

@@ -19,8 +19,7 @@ class MobeyeGeolocation: RCTEventEmitter {
   var resolver: RCTPromiseResolveBlock!
   var lastUsedLocation: MyLocation!
   var locationBuffer: RingBuffer<MyLocation>!
-  var distanceFilter: CLLocationDistance!
-  var desiredAccuracy: CLLocationAccuracy!
+  var configurationInitial: LocationConfiguration!
   var isBackground = false
   
   override static func requiresMainQueueSetup() -> Bool {
@@ -53,21 +52,16 @@ class MobeyeGeolocation: RCTEventEmitter {
     
     do {
       /* get configuration object */
-      let locationConfiguration = try LocationConfiguration(dictionary: configuration)
-      
-      /* save desired options */
-      self.distanceFilter = CLLocationDistance(locationConfiguration.distanceFilter)
-      self.desiredAccuracy = LocationAccuracyDict[locationConfiguration.desiredAccuracy]
+      self.configurationInitial = try LocationConfiguration(dictionary: configuration)
       
       /* set service options */
-      self.locationManager.distanceFilter = self.distanceFilter
-      self.locationManager.desiredAccuracy = self.desiredAccuracy
+      self.setProviderOptions(self.configurationInitial)
       self.locationManager.delegate = self
       /* set background location updates */
       self.locationManager.pausesLocationUpdatesAutomatically = false
       
       /* create RingBuffer */
-      self.locationBuffer = RingBuffer<MyLocation>(locationConfiguration.bufferSize)
+      self.locationBuffer = RingBuffer<MyLocation>(self.configurationInitial.bufferSize)
       
       /* get stored data */
       let storedLocations = UserDefaults.standard.string(forKey: "location")
@@ -77,7 +71,7 @@ class MobeyeGeolocation: RCTEventEmitter {
         /* Initiate the ring buffer with stored locations */
         jsonData = storedLocations!.data(using: .utf8)!
         let locationsArray = try! decoder.decode([MyLocation].self, from: jsonData)
-        self.locationBuffer = try! RingBuffer<MyLocation>(locationConfiguration.bufferSize, array: locationsArray)
+        self.locationBuffer = try! RingBuffer<MyLocation>(self.configurationInitial.bufferSize, array: locationsArray)
       }
       let storedLastUsedLocation = UserDefaults.standard.string(forKey: "lastUsedLocation")
       if (storedLastUsedLocation != nil) {
@@ -151,24 +145,34 @@ class MobeyeGeolocation: RCTEventEmitter {
   }
   
   /**
-   Set provider options for best accuracy.
-   Be careful those options will drain the battery.
+   Set a temporary change of provider options.
+    - Parameters:
+      - configuration: Configuration dictionnary with these keys:
+        - distance: minimum distance before an update event is generated.
+        - accuracy: string in `LevelAccuracy`.
    */
   @objc
-  func startBestAccuracyLocation(_ distance: NSInteger) -> Void
+  func setTemporaryConfiguration(_ configuration: NSDictionary,
+                                 resolver resolve: RCTPromiseResolveBlock,
+                                 rejecter reject: RCTPromiseRejectBlock) -> Void
   {
-    self.locationManager.distanceFilter = CLLocationDistance(distance)
-    self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+    do {
+      self.setProviderOptions(try LocationConfiguration(dictionary: configuration))
+    } catch {
+        let err = GeolocationError.INVALID_CONFIGURATION
+        reject(err.info.code, err.info.description, nil)
+        return
+    }
+    resolve(true)
   }
   
   /*
-   Set the service to balanced power and accuracy.
+   Revert the temporary options.
    */
   @objc
-  func stopBestAccuracyLocation() -> Void
+  func revertTemporaryConfiguration() -> Void
   {
-    self.locationManager.distanceFilter = self.distanceFilter
-    self.locationManager.desiredAccuracy = self.desiredAccuracy
+    self.setProviderOptions(self.configurationInitial)
   }
   
   /**
@@ -280,6 +284,17 @@ class MobeyeGeolocation: RCTEventEmitter {
     }
     self.locationManager.startMonitoringSignificantLocationChanges()
   }
+  
+  /**
+   Set provider's options using LocationConfiguration object.
+   - Parameters:
+     - configuration: LocationConfiguration object
+   */
+  private func setProviderOptions(_ configuration: LocationConfiguration) {
+    /* save desired options */
+    self.locationManager.distanceFilter = CLLocationDistance(configuration.distanceFilter)
+    self.locationManager.desiredAccuracy = LocationAccuracyDict[configuration.desiredAccuracy]!
+  }
 }
 
 extension MobeyeGeolocation: CLLocationManagerDelegate {
@@ -329,13 +344,9 @@ extension MobeyeGeolocation: CLLocationManagerDelegate {
     if (self.isBackground) {
       self.writeBufferInStore()
     }
-    
-    let dist = (self.lastUsedLocation?.distanceTo(latitude: result.latitude, longitude: result.longitude) ?? Double.greatestFiniteMagnitude)
-    let significantChange = dist > 100.0
-    if (significantChange) {
-      self.updateLastUsedLocation()
-      self.sendEvent(withName: "LOCATION_UPDATED", body: ["success": true, "payload": locationDict!])
-    }
+
+    self.updateLastUsedLocation()
+    self.sendEvent(withName: "LOCATION_UPDATED", body: ["success": true, "payload": locationDict!])
   }
   
   /**

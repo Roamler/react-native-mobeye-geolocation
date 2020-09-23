@@ -74,17 +74,21 @@ export default function App() {
             <Text style={styles.instructions}>Latitude: {location.latitude.toString()}</Text>
             <Text style={styles.instructions}>Longitude: {location.longitude.toString()}</Text>
             <Text style={styles.instructions}>Accuracy: {location.accuracy.toString()}</Text>
-            <Text style={styles.instructions}>Date: {date.format('MM/DD/YYYY hh:mm')}</Text>
+            <Text style={styles.instructions}>Date: {date.format('MM/DD/YYYY hh:mm:ss')}</Text>
             <Button
                 title={'Balanced Power and Accuracy'}
                 onPress={() => {
-                    Geolocation.stopBestAccuracyLocation();
+                    Geolocation.revertTemporaryConfiguration();
                 }}
             />
             <Button
                 title={'Best Accuracy'}
                 onPress={() => {
-                    Geolocation.startBestAccuracyLocation(50);
+                    Geolocation.setTemporaryConfiguration({
+                        desiredAccuracy: "BestAccuracy",
+                        distanceFilter: 1000,
+                        updateInterval: 1000
+                    });
                 }}
             />
         </View>

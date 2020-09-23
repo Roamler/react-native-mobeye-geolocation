@@ -1,4 +1,4 @@
-package com.mobeye.geolocation.utils;
+package com.mobeye.geolocation;
 
 public enum StoreKeys {
     LAST_USED_LOCATION,

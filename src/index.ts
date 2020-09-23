@@ -13,7 +13,7 @@ import { NativeEventEmitter, PermissionStatus } from 'react-native';
 import { useEffect, useState } from 'react';
 
 /* get native module */
-const { start, startBestAccuracyLocation, stopBestAccuracyLocation } = MobeyeGeolocation;
+const { start, revertTemporaryConfiguration } = MobeyeGeolocation;
 
 /* init default configuration */
 const _configuration: LocationConfiguration = DEFAULT_CONFIGURATION;
@@ -22,7 +22,14 @@ export function configure(configuration: Partial<LocationConfiguration>): void {
     MobeyeGeolocation.configure({
         ..._configuration,
         ...configuration
-    })
+    });
+}
+
+export function setTemporaryConfiguration(configuration: Partial<LocationConfiguration>): void {
+    MobeyeGeolocation.setTemporaryConfiguration({
+        ..._configuration,
+        ...configuration
+    });
 }
 
 /**
@@ -87,8 +94,8 @@ export function useLocation(): Location {
 export default {
     configure,
     start,
-    startBestAccuracyLocation,
-    stopBestAccuracyLocation,
+    setTemporaryConfiguration,
+    revertTemporaryConfiguration,
     locationEmitter,
     getLastLocations,
     checkIOSAuthorization,

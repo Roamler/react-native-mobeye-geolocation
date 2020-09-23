@@ -11,6 +11,7 @@ import Foundation
 struct LocationConfiguration {
   let desiredAccuracy: LevelAccuracy
   let distanceFilter: Int
+  let updateInterval: Int
   let bufferSize: Int
 }
 
