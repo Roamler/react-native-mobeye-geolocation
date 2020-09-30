@@ -2,11 +2,11 @@ package com.mobeye.geolocation;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.preference.PreferenceManager;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -78,7 +78,7 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
         mReactContext = reactContext;
         mReactContext.addLifecycleEventListener(this);
         mReactContext.addActivityEventListener(this);
-        mPreferences = PreferenceManager.getDefaultSharedPreferences(reactContext);
+        mPreferences = reactContext.getSharedPreferences("com.mobeye.geolocation.sharedpref", Context.MODE_PRIVATE);
         mInBackground = false;
     }
 
@@ -409,6 +409,8 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
                 writeBufferInStore();
             }
 
+            /* update last used location */
+            updateLastUsedLocation();
             /* Emits event with lastLocation */
             WritableMap body = Arguments.createMap();
             body.putBoolean("success", true);
