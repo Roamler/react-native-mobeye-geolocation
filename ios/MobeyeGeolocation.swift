@@ -64,7 +64,7 @@ class MobeyeGeolocation: RCTEventEmitter {
       self.locationBuffer = RingBuffer<MyLocation>(self.configurationInitial.bufferSize)
       
       /* get stored data */
-      let storedLocations = UserDefaults.standard.string(forKey: "location")
+      let storedLocations = UserDefaults.standard.string(forKey: MyLocation.BUFFER_KEY)
       let decoder = JSONDecoder()
       var jsonData: Data
       if (storedLocations != nil) {
@@ -73,7 +73,7 @@ class MobeyeGeolocation: RCTEventEmitter {
         let locationsArray = try! decoder.decode([MyLocation].self, from: jsonData)
         self.locationBuffer = try! RingBuffer<MyLocation>(self.configurationInitial.bufferSize, array: locationsArray)
       }
-      let storedLastUsedLocation = UserDefaults.standard.string(forKey: "lastUsedLocation")
+      let storedLastUsedLocation = UserDefaults.standard.string(forKey: MyLocation.LAST_LOCATION_KEY)
       if (storedLastUsedLocation != nil) {
         jsonData = storedLastUsedLocation!.data(using: .utf8)!
         self.lastUsedLocation = try! decoder.decode(MyLocation.self, from: jsonData)
@@ -187,7 +187,7 @@ class MobeyeGeolocation: RCTEventEmitter {
     self.lastUsedLocation = lastLocation
     let data = try! JSONEncoder().encode(self.lastUsedLocation)
     let stringDict = String(data: data, encoding: .utf8) ?? ""
-    UserDefaults.standard.set(stringDict, forKey: "lastUsedLocation")
+    UserDefaults.standard.set(stringDict, forKey: MyLocation.LAST_LOCATION_KEY)
   }
   
   @objc
@@ -258,7 +258,7 @@ class MobeyeGeolocation: RCTEventEmitter {
     let locationArray = Array(self.locationBuffer.getArray() ?? [])
     let data = try! JSONEncoder().encode(locationArray)
     let stringDict = String(data: data, encoding: .utf8) ?? ""
-    UserDefaults.standard.set(stringDict, forKey: "location")
+    UserDefaults.standard.set(stringDict, forKey: MyLocation.BUFFER_KEY)
   }
   
   /**

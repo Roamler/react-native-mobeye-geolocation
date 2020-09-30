@@ -9,8 +9,9 @@
 import Foundation
 import CoreLocation
 
-class MyLocation: NSObject, Codable {
-  static let storageKey: String = "\(Bundle.main.bundleIdentifier!).Locations"
+public class MyLocation: NSObject, Codable {
+  public static let BUFFER_KEY: String = "\(Bundle.main.bundleIdentifier!).locations"
+  public static let LAST_LOCATION_KEY: String = "\(Bundle.main.bundleIdentifier!).lastLocation"
 
   let latitude: Double
   let longitude: Double
