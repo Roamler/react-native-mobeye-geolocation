@@ -18,14 +18,14 @@ const { start, revertTemporaryConfiguration } = MobeyeGeolocation;
 /* init default configuration */
 const _configuration: LocationConfiguration = DEFAULT_CONFIGURATION;
 
-export function configure(configuration: Partial<LocationConfiguration>): void {
+export function configure(configuration?: Partial<LocationConfiguration>): void {
     MobeyeGeolocation.configure({
         ..._configuration,
         ...configuration
     });
 }
 
-export function setTemporaryConfiguration(configuration: Partial<LocationConfiguration>): void {
+export function setTemporaryConfiguration(configuration?: Partial<LocationConfiguration>): void {
     MobeyeGeolocation.setTemporaryConfiguration({
         ..._configuration,
         ...configuration
