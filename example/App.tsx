@@ -4,7 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, PermissionsAndroid, PermissionStatus, Platform, StyleSheet, Text, View } from 'react-native';
-import Geolocation, { useLocation } from 'react-native-mobeye-geolocation';
+import Geolocation, { useLocation } from '@mobeye/react-native-geolocation';
 import moment from 'moment';
 
 const styles = StyleSheet.create({

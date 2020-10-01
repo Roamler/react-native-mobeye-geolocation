@@ -14,14 +14,14 @@ React Native Geolocation API for Android and iOS. It allows to get geolocation a
 
 Install the library using Yarn:
 ```bash
-yarn add react-native-mobeye-geolocation
+yarn add @mobeye/react-native-geolocation
 ```
 
 ## General Usage
 ```javascript
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text } from 'react-native';
-import Geolocation, { useLocation } from 'react-native-mobeye-geolocation';
+import Geolocation, { useLocation } from '@mobeye/react-native-geolocation';
 
 export const App = () => {
   const [permission, setPermission] = useState(false);
@@ -148,7 +148,7 @@ A React Hook which can be used to get access to the last computed location and t
 
 *Example:*
 ```javascript
-import { useLocation } from 'react-native-mobeye-geolocation';
+import { useLocation } from '@mobeye/react-native-geolocation';
 
 const YourComponent = () => {
   const location = useLocation();
@@ -202,7 +202,7 @@ Return a `Promise` that gets the location permission status as `boolean` for ios
 ```javascript
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
-import Geolocation from 'react-native-mobeye-geolocation';
+import Geolocation from '@mobeye/react-native-geolocation';
 
 const YourComponent = () => {
   const [permission, setPermission] =  useState(false);
@@ -231,7 +231,7 @@ Requests the geolocation permission for ios. Returns a `Promise` that resolves t
 ```javascript
 import { useEffect } from 'react';
 import { Platform, PermissionStatus } from 'react-native';
-import Geolocation from 'react-native-mobeye-geolocation';
+import Geolocation from '@mobeye/react-native-geolocation';
 
 const YourComponent = () => {
   const [status, setStatus] = useEffect(PermissionStatus.denied); 
