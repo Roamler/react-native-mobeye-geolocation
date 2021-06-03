@@ -169,7 +169,7 @@ Return a `Promise` that gets last locations saved in the buffer. You can optiona
 
 *Example:*
 ```javascript
-Geolocation.getLastLocation(10).then(locations => {
+Geolocation.getLastLocations(10).then(locations => {
   const lastLocation = locations[0];
   console.log("Latitude", lastLocation.latitude);
   console.log("Longitude", lastLocation.longitude);
@@ -192,7 +192,7 @@ Reset configuration with the [`LocationConfiguration`](#locationconfiguration) u
 
 *Example*
 ```javascript
-Geolocation.resetTemporaryConfiguration();
+Geolocation.revertTemporaryConfiguration();
 ```
 
 #### `checkIOSAuthorization()`
