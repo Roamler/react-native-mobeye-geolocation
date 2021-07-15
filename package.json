@@ -1,7 +1,7 @@
 {
   "name": "@mobeye/react-native-geolocation",
   "title": "React Native Mobeye Geolocation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Geolocation that used Fused Location Provider API for Android and Significant-Change service for iOS",
   "main": "lib/commonjs/index.js",
   "files": [
