@@ -77,7 +77,7 @@ export function useLocation(): Location {
     useEffect(() => {
         /* get last known use position */
 
-        getLastLocations(1).then((res) => setLocation(res[0]));
+        getLastLocations(1).then((res) => setLocation(res[0])).catch(console.log);
 
         /* subscribe to the listener */
         const subscription = locationEmitter.addListener('LOCATION_UPDATED', (result: LocationEvent) => {
