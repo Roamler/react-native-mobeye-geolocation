@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class MyLocation {
 
-    public MyLocation(){}
+    public MyLocation() {}
 
     public MyLocation(Location l) {
         this.provider = l.getProvider();
@@ -17,6 +17,7 @@ public class MyLocation {
         this.longitude = l.getLongitude();
         this.accuracy = l.getAccuracy();
         this.time = l.getTime();
+        this.mock = l.isFromMockProvider();
     }
 
     /**
@@ -51,25 +52,32 @@ public class MyLocation {
         return time;
     }
 
+    public Boolean isFromMockProvider() {
+        return mock;
+    }
+
     @SerializedName("provider")
     @Expose
     private String provider;
     @SerializedName("longitude")
     @Expose
-    private Double longitude;
+    private double longitude;
     @SerializedName("latitude")
     @Expose
-    private Double latitude;
+    private double latitude;
     @SerializedName("accuracy")
     @Expose
-    private Float accuracy;
+    private float accuracy;
     @SerializedName("time")
     @Expose
-    private Long time;
+    private long time;
+    @SerializedName("mock")
+    @Expose
+    private boolean mock;
 
     public String toString(){
         return this.getProvider() + ": " + this.getLatitude() + ", " + this.getLongitude()
-                + " acc: " + this.getAccuracy() + " time: " + this.getTime();
+                + " acc: " + this.getAccuracy() + " time: " + this.getTime() + " mock: " + this.isFromMockProvider();
     }
 
     public WritableMap toMap(){
@@ -78,6 +86,7 @@ public class MyLocation {
         locationMap.putDouble("latitude", this.getLatitude());
         locationMap.putDouble("accuracy", this.getAccuracy());
         locationMap.putDouble("time", this.getTime());
+        locationMap.putBoolean("mock", this.isFromMockProvider());
         return locationMap;
     }
 }

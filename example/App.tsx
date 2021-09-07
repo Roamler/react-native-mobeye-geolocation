@@ -74,6 +74,7 @@ export default function App() {
             <Text style={styles.instructions}>Latitude: {location.latitude.toString()}</Text>
             <Text style={styles.instructions}>Longitude: {location.longitude.toString()}</Text>
             <Text style={styles.instructions}>Accuracy: {location.accuracy.toString()}</Text>
+            <Text style={styles.instructions}>Mock: {location.mock.toString()}</Text>
             <Text style={styles.instructions}>Date: {date.format('MM/DD/YYYY hh:mm:ss')}</Text>
             <Button
                 title={'Balanced Power and Accuracy'}
