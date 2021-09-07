@@ -53,6 +53,7 @@ export const App = () => {
       <Text>Latitude: {location.latitude.toString()}</Text>
       <Text>Longitude: {location.longitude.toString()}</Text>
       <Text>Accuracy: {location.accuracy.toString()}</Text>
+      <Text>Is from mock provider: {location.mock.toString()}</Text>
     </View>
   );
 };
@@ -107,6 +108,7 @@ Describe a computed location:
 | `longitude` | `number` | The longitude in degrees. Measurements are relative to the zero meridian, with positive values extending east of the meridian and negative values extending west of the meridian. |
 | `accuracy`  | `number` | The location’s latitude and longitude identify the center of the circle, and this value indicates the radius in meter of that circle. A negative value indicates that the latitude and longitude are invalid. |
 | `time`      | `number` | The time at which this location was determined. It is an Unix Time Stamp in seconds. |
+| `mock`      | `boolean` | Returns true if the Location came from a mock provider. Works only for Android, always return false on IOS |
 
 #### `Errors`
 You can encounter some errors that are described in this table:
@@ -158,6 +160,7 @@ const YourComponent = () => {
       <Text>Latitude: {location.latitude.toString()}</Text>
       <Text>Longitude: {location.longitude.toString()}</Text>
       <Text>Accuracy: {location.accuracy.toString()}</Text>
+      <Text>Is from mock provider: {location.mock.toString()}</Text>
     </View>
   )
 }
