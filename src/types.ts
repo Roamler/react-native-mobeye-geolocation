@@ -33,6 +33,7 @@ export type Location = {
     longitude: number;
     accuracy: number;
     time: number;
+    mock: boolean;
 }
 
 export type LocationEventSuccess = {

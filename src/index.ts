@@ -9,7 +9,7 @@
 import MobeyeGeolocation from './nativeModule';
 import DEFAULT_CONFIGURATION from './defaultConfiguration';
 import { Location, LocationConfiguration, LocationEvent } from './types';
-import { NativeEventEmitter, PermissionStatus } from 'react-native';
+import { NativeEventEmitter, PermissionStatus, Platform } from 'react-native';
 import { useEffect, useState } from 'react';
 
 /* get native module */
@@ -39,6 +39,14 @@ export function setTemporaryConfiguration(configuration?: Partial<LocationConfig
 export function getLastLocations(n: number): Promise<[Location]> {
     return MobeyeGeolocation.getLastLocations(n).then((result) => {
         const locations: [Location] = JSON.parse(result);
+
+        if (Platform.OS === 'ios') {
+            locations.forEach(location => {
+                location.mock = false
+            })
+
+        }
+
         return locations;
     });
 }
@@ -72,6 +80,7 @@ export function useLocation(): Location {
         longitude: -1,
         accuracy: Number.MAX_SAFE_INTEGER,
         time: 0,
+        mock: false,
     });
 
     useEffect(() => {
@@ -87,6 +96,10 @@ export function useLocation(): Location {
         });
         return () => subscription.remove();
     }, []);
+
+    if (Platform.OS === 'ios') {
+        location.mock = false
+    }
 
     return location;
 }
