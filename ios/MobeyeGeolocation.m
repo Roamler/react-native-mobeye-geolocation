@@ -30,4 +30,7 @@ RCT_EXTERN_METHOD(checkPermission: (RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(askForPermission: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject
                   );
+RCT_EXTERN_METHOD(checkAccuracyAuthorization: (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject
+                  );
 @end

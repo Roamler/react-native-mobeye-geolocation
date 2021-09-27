@@ -8,7 +8,7 @@
  */
 import MobeyeGeolocation from './nativeModule';
 import DEFAULT_CONFIGURATION from './defaultConfiguration';
-import { Location, LocationConfiguration, LocationEvent } from './types';
+import { AccuracyAuthorization, Location, LocationConfiguration, LocationEvent } from './types';
 import { NativeEventEmitter, PermissionStatus, Platform } from 'react-native';
 import { useEffect, useState } from 'react';
 
@@ -49,6 +49,13 @@ export function getLastLocations(n: number): Promise<[Location]> {
 
         return locations;
     });
+}
+
+/**
+ * Check location  accuracy authorization.
+ */
+export function checkAccuracyAuthorization(): Promise<AccuracyAuthorization> {
+    return MobeyeGeolocation.checkAccuracyAuthorization();
 }
 
 /**
@@ -117,4 +124,5 @@ export default {
     getLastLocations,
     checkIOSAuthorization,
     requestIOSAuthorization,
+    checkAccuracyAuthorization,
 };

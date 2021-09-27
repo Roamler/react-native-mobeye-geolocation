@@ -18,6 +18,7 @@ enum GeolocationError: Error {
   case LOCATION_NOT_CONFIGURED
   case INVALID_CONFIGURATION
   case UNKNOWN_AUTHORIZATION_STATUS
+  case UNKNOWN_ACCURACY_AUTHORIZATION
 
   var info: (code: String, description: String) {
     switch self {
@@ -31,6 +32,8 @@ enum GeolocationError: Error {
       return (code: "4", description: "Configuration is invalid")
     case .UNKNOWN_AUTHORIZATION_STATUS:
       return (code: "5", description: "Unknown authorization status")
+    case .UNKNOWN_ACCURACY_AUTHORIZATION:
+      return (code: "6", description: "Unknown accuracy authorization")
     default:
       return (code: "1000", description: "Default error")
     }

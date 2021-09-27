@@ -12,6 +12,7 @@
 		270339E424C5FE3900E01D06 /* MobeyeGeolocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270339DD24C5FE3900E01D06 /* MobeyeGeolocation.swift */; };
 		270339E524C5FE3900E01D06 /* MyLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270339DE24C5FE3900E01D06 /* MyLocation.swift */; };
 		270339E824C5FE9C00E01D06 /* MobeyeGeolocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 270339E724C5FE9C00E01D06 /* MobeyeGeolocation.m */; };
+		8827002926FCC4EF00890884 /* AccuracyAuthorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8827002826FCC4EF00890884 /* AccuracyAuthorization.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -34,6 +35,7 @@
 		270339DE24C5FE3900E01D06 /* MyLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyLocation.swift; sourceTree = "<group>"; };
 		270339E124C5FE3900E01D06 /* MobeyeGeolocation-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MobeyeGeolocation-Bridging-Header.h"; sourceTree = "<group>"; };
 		270339E724C5FE9C00E01D06 /* MobeyeGeolocation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MobeyeGeolocation.m; sourceTree = "<group>"; };
+		8827002826FCC4EF00890884 /* AccuracyAuthorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccuracyAuthorization.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +60,7 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				8827002826FCC4EF00890884 /* AccuracyAuthorization.swift */,
 				270339E724C5FE9C00E01D06 /* MobeyeGeolocation.m */,
 				270339E124C5FE3900E01D06 /* MobeyeGeolocation-Bridging-Header.h */,
 				270339DD24C5FE3900E01D06 /* MobeyeGeolocation.swift */,
@@ -126,6 +129,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8827002926FCC4EF00890884 /* AccuracyAuthorization.swift in Sources */,
 				270339E424C5FE3900E01D06 /* MobeyeGeolocation.swift in Sources */,
 				270339E224C5FE3900E01D06 /* utils.swift in Sources */,
 				270339E524C5FE3900E01D06 /* MyLocation.swift in Sources */,
