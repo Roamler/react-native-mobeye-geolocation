@@ -92,6 +92,12 @@ export default function App() {
                     });
                 }}
             />
+            <Button
+                title={'Check accuracy authorization'}
+                onPress={() => {
+                    Geolocation.checkAccuracyAuthorization().then(console.log);
+                }}
+            />
         </View>
     );
 }

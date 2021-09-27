@@ -7,7 +7,7 @@
  * @format
  */
 import { EventSubscriptionVendor, PermissionStatus } from 'react-native';
-import { LocationConfiguration } from './types';
+import { LocationConfiguration, AccuracyAuthorization } from './types';
 
 export interface GeolocationNativeModule extends EventSubscriptionVendor{
     /* configure the location service */
@@ -34,4 +34,7 @@ export interface GeolocationNativeModule extends EventSubscriptionVendor{
 
     /* Request the ios geolocation authorization */
     askForPermission: () => Promise<PermissionStatus>;
+
+    /* Check the level of location accuracy the app has permission to use */
+    checkAccuracyAuthorization: () => Promise<AccuracyAuthorization>;
 }

@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 import static androidx.core.content.ContextCompat.checkSelfPermission;
 
@@ -166,6 +167,19 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
     public void revertTemporaryConfiguration() {
         mCurrentConfiguration = mInitialConfiguration;
         resetLocationProvider();
+    }
+
+    /**
+     * Check accuracy authorizaiton.
+     */
+    @ReactMethod
+    public void checkAccuracyAuthorization(Promise promise){
+        if (ActivityCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            promise.resolve(AccuracyAuthorization.FULL_ACCURACY);
+        } else {
+            promise.resolve(AccuracyAuthorization.REDUCED_ACCURACY);
+        }
     }
 
     /**

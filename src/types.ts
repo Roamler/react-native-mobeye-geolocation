@@ -17,6 +17,11 @@ export enum LocationError {
 }
 
 /**
+ * Accuracy authorization levels
+ */
+export type AccuracyAuthorization = "FullAccuracy" | "ReducedAccuracy";
+
+/**
  * Different types of accuracy
  */
 export type AccuracyLevel = "PowerSaving" | "BalancedPower" | "BestAccuracy" | "NavigationAccuracy";
