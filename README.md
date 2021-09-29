@@ -74,7 +74,7 @@ export const App = () => {
     - [`revertTemporaryConfiguration()`](#reverttemporaryconfiguration)
     - [`checkIOSauthorization()`](#checkiosauthorization)
     - [`requestIOSauthorization()`](#requestiosauthorization)
-    - [`checkAccuracyAuthorization()`](#requestiosauthorization)
+    - [`checkAccuracyAuthorization()`](#checkaccuracyauthorization)
 
 ### Types
 
@@ -242,12 +242,12 @@ const YourComponent = () => {
 Requests the geolocation permission for ios. Returns a `Promise` that resolves to a [`PermissionStatus`](https://reactnative.dev/docs/permissionsandroid#result-strings-for-requesting-permissions). [`configure`](#configure) must be called before this method since the service will start on its own if the user set the geolocation permission.
 
 ```javascript
-import { useEffect, useStatus } from 'react';
+import { useEffect, useState } from 'react';
 import { Platform, PermissionStatus } from 'react-native';
 import Geolocation from '@mobeye/react-native-geolocation';
 
 const YourComponent = () => {
-  const [status, setStatus] = useStatus(PermissionStatus.denied); 
+  const [status, setStatus] = useState(PermissionStatus.denied); 
     
   useEffect(() => {
     if (Platform.OS === 'ios') {
@@ -262,16 +262,16 @@ const YourComponent = () => {
   )
 }
 ```
-### `checkAccuracyAuthorization()`
+#### `checkAccuracyAuthorization()`
 Requests the geolocation accuracy authorization. Returns a `Promise` that resolves to a [`AccuracyAuthorization`]
 
 ```javascript
-import { useEffect, useStatus } from 'react';
+import { useEffect, useState } from 'react';
 import Geolocation from '@mobeye/react-native-geolocation';
 
 const YourComponent = () => {
 
-  const [status, setStatus] = useStatus(null);
+  const [status, setStatus] = useState(null);
 
   useEffect(() => {
       Geolocation.checkAccuracyAuthorization().then(status => setStatus(status))
