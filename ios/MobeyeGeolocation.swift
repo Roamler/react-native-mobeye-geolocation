@@ -231,6 +231,26 @@ class MobeyeGeolocation: RCTEventEmitter {
       reject(err.info.code, err.info.description, nil)
     }
   }
+    
+    
+  @objc
+  func checkAccuracyAuthorization(_ resolve: RCTPromiseResolveBlock,
+                       rejecter reject: RCTPromiseRejectBlock) -> Void
+  {
+      if #available(iOS 14.0, *) {
+          switch locationManager.accuracyAuthorization {
+          case .fullAccuracy:
+              resolve(AccuracyAuthorization.FullAccuracy)
+          case .reducedAccuracy:
+              resolve(AccuracyAuthorization.ReducedAccuracy)
+          @unknown default:
+              let err = GeolocationError.UNKNOWN_ACCURACY_AUTHORIZATION
+              reject(err.info.code, err.info.description, nil)
+          }
+      } else {
+          resolve(AccuracyAuthorization.FullAccuracy)
+      }
+  }
   
   /**
    Method executed when the app start or go to foreground
