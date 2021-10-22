@@ -2,11 +2,18 @@
 
 React Native Geolocation API for Android and iOS. It allows to get geolocation as well in background as in foreground.
 
-<p style="text-align: center;">
+<p align="center" >
   <a href="https://www.npmjs.com/package/@mobeye/react-native-geolocation"><img src="https://img.shields.io/npm/dm/@mobeye/react-native-geolocation.svg?style=flat-square" alt="NPM downloads"></a>
   <a href="https://www.npmjs.com/package/@mobeye/react-native-geolocation"><img src="https://img.shields.io/npm/v/@mobeye/react-native-geolocation.svg?style=flat-square" alt="NPM version"></a>
   <a href="/LICENSE"><img src="https://img.shields.io/github/license/Mobeye/react-native-mobeye-geolocation.svg?style=flat-square" alt="License"></a>
 </p>
+<p align="center" >
+  <a href="https://github.com/Mobeye/react-native-mobeye-geolocation/commits/master"><img src="https://img.shields.io/github/commit-activity/m/Mobeye/react-native-mobeye-geolocation.svg?style=flat-square" alt="Commit activity"></a>
+  <a href="https://github.com/Mobeye/react-native-mobeye-geolocation/commits/master"><img src="https://img.shields.io/github/last-commit/Mobeye/react-native-mobeye-geolocation.svg?style=flat-square" alt="Last Commit"></a>
+  <a href="https://github.com/Mobeye/react-native-mobeye-geolocation/releases"><img src="https://img.shields.io/github/commits-since/Mobeye/react-native-mobeye-geolocation/latest.svg?style=flat-square" alt="Last commit since release"></a>
+</p>
+
+---
 
 ## Table of Contents
 
@@ -15,6 +22,7 @@ React Native Geolocation API for Android and iOS. It allows to get geolocation a
   - [General Usage](#general-usage)
   - [API](#API)
   - [Example](#example)
+  - [License](#license)
 
 ## Getting started
 
@@ -300,3 +308,18 @@ yarn && cd example/ios/ && pod install && cd - && yarn start
 ```
 
 Then, open the example directory with xcode or android studio to build the example.
+
+### License
+
+- See [LICENSE](/LICENSE)
+
+---
+
+<p align="center">
+  <a href="https://mobeye-app.com/">
+    <img width="120px" src="https://u4s4z4j6.stackpathcdn.com/wp-content/uploads/2018/10/logo-noir-e1568971859438.png">
+  </a>
+  <p align="center">
+    Built and maintained by <a href="https://mobeye-app.com/">Mobeye</a>.
+  </p>
+</p>
