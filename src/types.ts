@@ -52,3 +52,8 @@ export type LocationEventError = {
 }
 
 export type LocationEvent = LocationEventSuccess | LocationEventError;
+
+export type LocationProvidersStatus ={
+    isGPSLocationEnabled: boolean;
+    isNetworkLocationEnabled: boolean
+}
