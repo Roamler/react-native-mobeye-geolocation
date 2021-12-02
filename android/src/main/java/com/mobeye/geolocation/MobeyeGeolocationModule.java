@@ -224,7 +224,7 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
     @Override
     public void onHostPause() {
         /* the pop-up to accept authorization trigger the pause and save an empty buffer */
-        if (!mBufferedLocations.isEmpty()) {
+        if (mBufferedLocations != null && !mBufferedLocations.isEmpty()) {
             /* save the bufferedLocations in sharedPref */
             writeBufferInStore();
         }
