@@ -77,6 +77,8 @@ export const App = () => {
 
 - **Types:**
     - [`AccuracyLevel`](#accuracylevel)
+    - [`AccuracyAuthorization`](#accuracyauthorization)
+    - [`LocationProvidersStatus`](#locationprovidersstatus)
     - [`LocationConfiguration`](#locationconfiguration)
     - [`Location`](#location)
     - [`Errors`](#errors)
@@ -88,6 +90,8 @@ export const App = () => {
     - [`revertTemporaryConfiguration()`](#reverttemporaryconfiguration)
     - [`checkIOSauthorization()`](#checkiosauthorization)
     - [`requestIOSauthorization()`](#requestiosauthorization)
+    - [`getAndroidLocationProvidersStatus()`](#getandroidlocationprovidersstatus)
+    - [`checkAndroidLocationSettings()`](#checkandroidlocationsettings)
     - [`checkAccuracyAuthorization()`](#checkaccuracyauthorization)
 
 ### Types
@@ -121,6 +125,14 @@ Describes different accuracy authorization levels:
 | ---------------------- | ----------- |
 | `'ReducedAccuracy'`    | Only approximate location is available. 
 | `'FullAccuracy'`       | Precise location is available, the `'AccuracyLevel'` can be set to any value. |
+
+#### `LocationProvidersStatus`
+Describes location providers status on android phones:
+
+| Property    | Type     | Description |
+| ----------- | -------- | ----------- |
+| `isGPSLocationEnabled`  | `boolean` | Represents the status of the GPS location provider on android. |
+| `isNetworkLocationEnabled` | `boolean` | Represents the status of the Network location provider on android. |
 
 #### `Location`
 Describe a computed location:
@@ -276,8 +288,49 @@ const YourComponent = () => {
   )
 }
 ```
+#### `getAndroidLocationProvidersStatus()`
+
+Requests the geolocation status. Returns a `Promise` that resolves to a [`LocationProviderStatus`](#locationproviderstatus)
+
+*Example:*
+```javascript
+import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
+import Geolocation from '@mobeye/react-native-geolocation';
+
+const YourComponent = () => {
+   const [locationStatus, setLocationStatus] = useState<LocationProvidersStatus>({
+           isGPSLocationEnabled: false,
+           isNetworkLocationEnabled: false,
+       });
+      
+    useEffect(() => {
+      if (Platform.OS === 'android') {
+        Geolocation.getAndroidLocationProvidersStatus().then(status => setLocationStatus(status))
+      }
+    }, [])
+  
+    return (
+      <View>
+        <Text>Is GPS location enabled? {locationStatus.isGPSLocationEnabled}</Text>
+        <Text>Is Network location enabled? {locationStatus.isNetworkLocationEnabled}</Text>
+      </View>
+  )
+}
+```
+#### `checkAndroidLocationSettings()`
+
+Requests to determine whether the location settings are enabled on android phones, if the settings must be changed then a dialog that prompts the user for permission to modify the location settings should be displayed and it returns a GeolocationError which is CHECK_SETTINGS_FAILURE when it fails. For more information please check this [link](https://developer.android.com/training/location/change-location-settings)
+
+*Example:*
+```javascript
+
+Geolocation.checkAndroidLocationSettings().catch(console.log);
+
+```
+
 #### `checkAccuracyAuthorization()`
-Requests the geolocation accuracy authorization. Returns a `Promise` that resolves to a [`AccuracyAuthorization`]
+Requests the geolocation accuracy authorization. Returns a `Promise` that resolves to a [`AccuracyAuthorization`](#accuracyauthorization)
 
 ```javascript
 import { useEffect, useState } from 'react';

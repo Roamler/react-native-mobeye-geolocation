@@ -5,7 +5,8 @@ public enum GeolocationError {
     NO_LOCATION_AVAILABLE(2, "No location in buffer"),
     LOCATION_NOT_CONFIGURED(3, "Location service is not configured"),
     INVALID_CONFIGURATION(4, "Configuration is invalid"),
-    UNKNOWN_AUTHORIZATION_STATUT(5, "Unknow authorization status");
+    UNKNOWN_AUTHORIZATION_STATUT(5, "Unknow authorization status"),
+    CHECK_SETTINGS_FAILURE(7,"Check settings request failure");
 
     private final int code;
     private final String description;

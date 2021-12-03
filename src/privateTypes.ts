@@ -7,7 +7,8 @@
  * @format
  */
 import { NativeModule, PermissionStatus } from 'react-native';
-import { LocationConfiguration, AccuracyAuthorization } from './types';
+import { LocationConfiguration, AccuracyAuthorization, LocationProvidersStatus } from './types';
+
 
 export interface GeolocationNativeModule extends NativeModule{
     /* configure the location service */
@@ -37,4 +38,12 @@ export interface GeolocationNativeModule extends NativeModule{
 
     /* Check the level of location accuracy the app has permission to use */
     checkAccuracyAuthorization: () => Promise<AccuracyAuthorization>;
+
+    /* Check if location settings are coherent with user options and propose a resolution popup if it's possible on Android.
+     * it returns a GeolocationError which is CHECK_SETTINGS_FAILURE when either the resolution is not feasible or when
+     * it encounter a problem with the pendingIntent */
+    checkLocationSettings: () => Promise<void>;
+
+    /* Get the location status for the GPS provider and the Network provider */
+    getLocationProvidersStatus: () => Promise<LocationProvidersStatus>;
 }

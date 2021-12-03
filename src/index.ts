@@ -8,7 +8,13 @@
  */
 import MobeyeGeolocation from './nativeModule';
 import DEFAULT_CONFIGURATION from './defaultConfiguration';
-import { AccuracyAuthorization, Location, LocationConfiguration, LocationEvent } from './types';
+import {
+    AccuracyAuthorization,
+    Location,
+    LocationConfiguration,
+    LocationEvent,
+    LocationProvidersStatus,
+} from './types';
 import { NativeEventEmitter, PermissionStatus, Platform } from 'react-native';
 import { useEffect, useState } from 'react';
 
@@ -74,6 +80,18 @@ export function requestIOSAuthorization(): Promise<PermissionStatus> {
     return MobeyeGeolocation.askForPermission();
 }
 
+/* Get the location status for the GPS provider and the Network provider on Android */
+export function getAndroidLocationProvidersStatus(): Promise<LocationProvidersStatus> {
+   return MobeyeGeolocation.getLocationProvidersStatus();
+}
+
+/* Check if location settings are coherent with user options and propose a resolution popup if it's possible on Android.
+ * it returns a GeolocationError which is CHECK_SETTINGS_FAILURE when either the resolution is not feasible or when
+ * it encounter a problem with the pendingIntent */
+export function checkAndroidLocationSettings(): Promise<void> {
+    return MobeyeGeolocation.checkLocationSettings();
+}
+
 /* Native event emitter to catch geolocations event */
 export const locationEmitter = new NativeEventEmitter(MobeyeGeolocation);
 
@@ -125,4 +143,6 @@ export default {
     checkIOSAuthorization,
     requestIOSAuthorization,
     checkAccuracyAuthorization,
+    getAndroidLocationProvidersStatus,
+    checkAndroidLocationSettings,
 };

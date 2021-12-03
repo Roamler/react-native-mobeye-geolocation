@@ -4,9 +4,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -19,6 +22,8 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -26,9 +31,9 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -60,6 +65,9 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
     }.getType();
     private static final Gson GSON = new Gson();
     private static String LOCATION_UPDATED = "LOCATION_UPDATED";
+    private MobeyeLocationCheck mLocationProviderReceiver;
+    protected static final int REQUEST_CHECK_SETTINGS = 1; //A unique integer there to distinguish check settings event
+    // uniquely in the range (0- max(int)). -1 hides the dialog box and any value below -1 simply crashes the app.
 
     private ReactContext mReactContext;
     private SharedPreferences mPreferences;
@@ -69,7 +77,6 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
     private LocationConfiguration mCurrentConfiguration;
     private FusedLocationProviderClient mLocationProvider;
     private LocationRequest mLocationRequest = new LocationRequest();
-    private SettingsClient mSettingsClient;
     private LocationSettingsRequest mLocationSettingsRequest;
     private MyLocation mLastUsedLocation;
     private Boolean mInBackground;
@@ -80,6 +87,8 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
         mReactContext.addLifecycleEventListener(this);
         mReactContext.addActivityEventListener(this);
         mPreferences = reactContext.getSharedPreferences("com.mobeye.geolocation.sharedpref", Context.MODE_PRIVATE);
+        this.mLocationProviderReceiver = new MobeyeLocationCheck(reactContext);
+        mReactContext.registerReceiver(mLocationProviderReceiver, new IntentFilter("android.location.PROVIDERS_CHANGED"));
         mInBackground = false;
     }
 
@@ -120,8 +129,6 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
 
     @ReactMethod
     public void start() {
-        /* check options is coherent with authorisation and start location service */
-        checkLocationSettings();
         startUpdatingLocation();
     }
 
@@ -202,7 +209,6 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
     private void resetLocationProvider() {
         stopUpdatingLocation();
         setLocationOptions();
-        checkLocationSettings();
         startUpdatingLocation();
     }
 
@@ -238,7 +244,9 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      * Method executed when the app is destroyed.
      */
     @Override
-    public void onHostDestroy() {}
+    public void onHostDestroy() {
+        mReactContext.unregisterReceiver(mLocationProviderReceiver);
+    }
 
     /**
      * Method executed when `resolvable.startResolutionForResult` is executed.
@@ -271,42 +279,76 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
     }
 
     /**
-     * Check if location settings are coherent with user options.
-     * @param promise a promise that returns the result to the JS code
-     */
-    private void checkLocationSettings(final Promise promise) {
-        checkLocationSettings();
+    * Check if location settings are coherent with user options and propose a resolution popup if it's possible.
+    * @param promise a promise that returns the result to the JS code
+    */
+    @ReactMethod
+    public void checkLocationSettings(final Promise promise) {
+        SettingsClient settingsClient = LocationServices.getSettingsClient(getReactApplicationContext());
+                   mLocationSettingsRequest = new LocationSettingsRequest.Builder()
+                           .addLocationRequest(mLocationRequest)
+                           .build();
 
-        Task<LocationSettingsResponse> task = mSettingsClient.checkLocationSettings(
-                mLocationSettingsRequest);
+           Task<LocationSettingsResponse> task = settingsClient.checkLocationSettings(
+                              mLocationSettingsRequest);
 
-        /* On success, start the provider to update the location */
-        task.addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
-            @Override
-            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                /* All location settings are satisfied. The client can initialize
-                 * location requests here.
-                 */
-                startUpdatingLocation();
-                promise.resolve(null);
-            }
-        });
+           task.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
+               @Override
+               public void onComplete(Task<LocationSettingsResponse> task) {
+                   try {
+                       LocationSettingsResponse response = task.getResult(ApiException.class);
+                       // All location settings are satisfied.
+                   } catch (ApiException exception) {
+                       switch (exception.getStatusCode()) {
+                           case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                               // Location settings are not satisfied. But could be fixed by showing the
+                               // user a dialog.
+                               try {
+                                   // Cast to a resolvable exception.
+                                   ResolvableApiException resolvable = (ResolvableApiException) exception;
+                                   // Show the dialog by calling startResolutionForResult(),
+                                   // and check the result in onActivityResult().
+                                   resolvable.startResolutionForResult(
+                                       getCurrentActivity(),
+                                       REQUEST_CHECK_SETTINGS);
+                               } catch (IntentSender.SendIntentException e) {
+                                   // Exception thrown when trying to send through a PendingIntent that has been
+                                   // canceled or is otherwise no longer able to execute the request.
+                                   GeolocationError err = GeolocationError.CHECK_SETTINGS_FAILURE;
+                                   promise.reject(String.valueOf(err.getCode()), err.getDescription(), e);
+                               } catch (ClassCastException e) {
+                                   // Ignore, should be an impossible error.
+                                   GeolocationError err = GeolocationError.CHECK_SETTINGS_FAILURE;
+                                   promise.reject(String.valueOf(err.getCode()), err.getDescription(), e);
+                               }
+                               return;
+                           case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                               // Location settings are not satisfied. However, we have no way to fix the
+                               // settings so we won't show the dialog.
+                               GeolocationError err = GeolocationError.CHECK_SETTINGS_FAILURE;
+                               promise.reject(String.valueOf(err.getCode()), err.getDescription());
+                               return;
+                        }
+                   }
+                   promise.resolve(null);
+               }
+           });
+    };
 
-        /* On failure, reject the promise to ask authorisation */
-        task.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                GeolocationError err = GeolocationError.LOCATION_FAILED;
-                promise.reject(String.valueOf(err.getCode()), err.getDescription());
-            }
-        });
-    }
+    /**
+    * Get the location status for the GPS provider and the Network provider
+    * @param promise a promise that returns the result to the JS code
+    */
+    @ReactMethod
+    public void getLocationProvidersStatus(final Promise promise) {
+        LocationManager locationManager = (LocationManager) mReactContext.getSystemService(ReactContext.LOCATION_SERVICE);
+        boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean isNetworkLocationEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        WritableMap params = Arguments.createMap();
+        params.putBoolean("isGPSLocationEnabled", isGPSEnabled);
+        params.putBoolean("isNetworkLocationEnabled", isNetworkLocationEnabled);
+        promise.resolve(params);
 
-    private void checkLocationSettings() {
-        mSettingsClient = LocationServices.getSettingsClient(getReactApplicationContext());
-        mLocationSettingsRequest = new LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest)
-                .build();
     }
 
     /**
