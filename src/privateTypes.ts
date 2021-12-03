@@ -6,10 +6,10 @@
  *
  * @format
  */
-import { EventSubscriptionVendor, PermissionStatus } from 'react-native';
+import { NativeModule, PermissionStatus } from 'react-native';
 import { LocationConfiguration, AccuracyAuthorization } from './types';
 
-export interface GeolocationNativeModule extends EventSubscriptionVendor{
+export interface GeolocationNativeModule extends NativeModule{
     /* configure the location service */
     configure: (
         configuration: LocationConfiguration
