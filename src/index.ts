@@ -133,6 +133,7 @@ export function useLocation(): Location {
     return location;
 }
 
+export * from './types';
 export default {
     configure,
     start,
