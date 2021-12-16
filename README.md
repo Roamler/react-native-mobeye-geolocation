@@ -296,7 +296,7 @@ Requests the geolocation status. Returns a `Promise` that resolves to a [`Locati
 ```javascript
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
-import Geolocation from '@mobeye/react-native-geolocation';
+import Geolocation, { LocationProvidersStatus } from '@mobeye/react-native-geolocation';
 
 const YourComponent = () => {
    const [locationStatus, setLocationStatus] = useState<LocationProvidersStatus>({
