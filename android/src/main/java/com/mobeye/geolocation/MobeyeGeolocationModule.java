@@ -245,7 +245,12 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      */
     @Override
     public void onHostDestroy() {
-        mReactContext.unregisterReceiver(mLocationProviderReceiver);
+        try {
+            mReactContext.unregisterReceiver(mLocationProviderReceiver);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+      
     }
 
     /**
