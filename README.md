@@ -330,10 +330,11 @@ Geolocation.checkAndroidLocationSettings().catch(console.log);
 ```
 
 #### `checkAccuracyAuthorization()`
-Requests the geolocation accuracy authorization. Returns a `Promise` that resolves to a [`AccuracyAuthorization`](#accuracyauthorization)
+Requests the geolocation accuracy authorization on IOS devices. Returns a `Promise` that resolves to a [`AccuracyAuthorization`](#accuracyauthorization)
 
 ```javascript
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import Geolocation from '@mobeye/react-native-geolocation';
 
 const YourComponent = () => {
@@ -341,7 +342,9 @@ const YourComponent = () => {
   const [status, setStatus] = useState(null);
 
   useEffect(() => {
+  if (Platform.OS === 'ios') {
       Geolocation.checkAccuracyAuthorization().then(status => setStatus(status))
+      }
   }, [])
 
   return (
