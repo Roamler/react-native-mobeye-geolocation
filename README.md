@@ -90,9 +90,9 @@ export const App = () => {
     - [`revertTemporaryConfiguration()`](#reverttemporaryconfiguration)
     - [`checkIOSauthorization()`](#checkiosauthorization)
     - [`requestIOSauthorization()`](#requestiosauthorization)
+    - [`checkIOSAccuracyAuthorization()`](#checkiosaccuracyauthorization)
     - [`getAndroidLocationProvidersStatus()`](#getandroidlocationprovidersstatus)
     - [`checkAndroidLocationSettings()`](#checkandroidlocationsettings)
-    - [`checkAccuracyAuthorization()`](#checkaccuracyauthorization)
 
 ### Types
 
@@ -288,6 +288,31 @@ const YourComponent = () => {
   )
 }
 ```
+#### `checkIOSAccuracyAuthorization()`
+Requests the geolocation accuracy authorization on ios devices. Returns a `Promise` that resolves to a [`AccuracyAuthorization`](#accuracyauthorization)
+
+```javascript
+import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
+import Geolocation from '@mobeye/react-native-geolocation';
+
+const YourComponent = () => {
+
+  const [status, setStatus] = useState(null);
+
+  useEffect(() => {
+  if (Platform.OS === 'ios') {
+      Geolocation.checkIOSAccuracyAuthorization().then(status => setStatus(status))
+      }
+  }, [])
+
+  return (
+    <View>
+      <Text>Accuracy authorization level:  {status}</Text>
+    </View>
+  )
+}
+```
 #### `getAndroidLocationProvidersStatus()`
 
 Requests the geolocation status. Returns a `Promise` that resolves to a [`LocationProviderStatus`](#locationproviderstatus)
@@ -327,32 +352,6 @@ Requests to determine whether the location settings are enabled on android phone
 
 Geolocation.checkAndroidLocationSettings().catch(console.log);
 
-```
-
-#### `checkAccuracyAuthorization()`
-Requests the geolocation accuracy authorization on IOS devices. Returns a `Promise` that resolves to a [`AccuracyAuthorization`](#accuracyauthorization)
-
-```javascript
-import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
-import Geolocation from '@mobeye/react-native-geolocation';
-
-const YourComponent = () => {
-
-  const [status, setStatus] = useState(null);
-
-  useEffect(() => {
-  if (Platform.OS === 'ios') {
-      Geolocation.checkAccuracyAuthorization().then(status => setStatus(status))
-      }
-  }, [])
-
-  return (
-    <View>
-      <Text>Accuracy authorization level:  {status}</Text>
-    </View>
-  )
-}
 ```
 
 ### Example
