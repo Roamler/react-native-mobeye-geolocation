@@ -177,19 +177,6 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
     }
 
     /**
-     * Check accuracy authorizaiton.
-     */
-    @ReactMethod
-    public void checkAccuracyAuthorization(Promise promise){
-        if (ActivityCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            promise.resolve(AccuracyAuthorization.FULL_ACCURACY);
-        } else {
-            promise.resolve(AccuracyAuthorization.REDUCED_ACCURACY);
-        }
-    }
-
-    /**
      * Update the used location by React to provide the mission list.
      * This variable is used to know if the user location has significantly changed.
      */

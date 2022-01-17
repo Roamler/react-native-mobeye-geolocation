@@ -58,9 +58,9 @@ export function getLastLocations(n: number): Promise<[Location]> {
 }
 
 /**
- * Check location  accuracy authorization.
+ * Check location accuracy authorization for ios.
  */
-export function checkAccuracyAuthorization(): Promise<AccuracyAuthorization> {
+export function checkIOSAccuracyAuthorization(): Promise<AccuracyAuthorization> {
     return MobeyeGeolocation.checkAccuracyAuthorization();
 }
 
@@ -143,7 +143,7 @@ export default {
     getLastLocations,
     checkIOSAuthorization,
     requestIOSAuthorization,
-    checkAccuracyAuthorization,
+    checkIOSAccuracyAuthorization,
     getAndroidLocationProvidersStatus,
     checkAndroidLocationSettings,
 };
