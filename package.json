@@ -11,6 +11,7 @@
     "!**/__fixtures__",
     "!**/__mocks__",
     "README.md",
+    "CHANGELOG.md",
     "android",
     "index.js",
     "ios",
