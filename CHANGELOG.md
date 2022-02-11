@@ -2,6 +2,14 @@
 
 Changelog of react-native-mobeye-geolocation.
 
+
+## 1.6.0 (2022-02-10)
+
+**Fix previous release by removing the possibility to publish the package on maven**
+
+[#35](https://github.com/Mobeye/react-native-mobeye-geolocation/pull/35)
+
+
 ## 1.5.0 (2022-02-02)
 
 
