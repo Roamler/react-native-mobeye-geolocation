@@ -32,6 +32,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -76,7 +77,7 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
     private LocationConfiguration mInitialConfiguration;
     private LocationConfiguration mCurrentConfiguration;
     private FusedLocationProviderClient mLocationProvider;
-    private LocationRequest mLocationRequest = new LocationRequest();
+    private LocationRequest mLocationRequest = LocationRequest.create();
     private LocationSettingsRequest mLocationSettingsRequest;
     private MyLocation mLastUsedLocation;
     private Boolean mInBackground;
@@ -259,7 +260,7 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
      */
     private void setLocationOptions() {
         if (mInBackground) {
-            mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER);
+            mLocationRequest.setPriority(Priority.PRIORITY_LOW_POWER);
             mLocationRequest.setInterval(60 * 1000);
             mLocationRequest.setSmallestDisplacement(500);
         } else {
