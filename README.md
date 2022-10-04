@@ -32,6 +32,7 @@ yarn add @mobeye/react-native-geolocation
 ```
 
 ## General Usage
+see the [example](https://github.com/Mobeye/react-native-mobeye-geolocation/blob/master/example/App.tsx) for more usage
 ```javascript
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text } from 'react-native';
