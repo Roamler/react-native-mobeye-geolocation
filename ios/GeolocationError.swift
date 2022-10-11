@@ -13,17 +13,15 @@ enum CustomError: Error {
 }
 
 enum GeolocationError: Error {
-  case LOCATION_FAILED
   case NO_LOCATION_AVAILABLE
   case LOCATION_NOT_CONFIGURED
   case INVALID_CONFIGURATION
   case UNKNOWN_AUTHORIZATION_STATUS
   case UNKNOWN_ACCURACY_AUTHORIZATION
+  case CHECK_SETTINGS_FAILURE
 
   var info: (code: String, description: String) {
     switch self {
-    case .LOCATION_FAILED:
-      return (code: "1", description: "Location service failed")
     case .NO_LOCATION_AVAILABLE:
       return (code: "2", description: "No location in buffer")
     case .LOCATION_NOT_CONFIGURED:
@@ -34,6 +32,9 @@ enum GeolocationError: Error {
       return (code: "5", description: "Unknown authorization status")
     case .UNKNOWN_ACCURACY_AUTHORIZATION:
       return (code: "6", description: "Unknown accuracy authorization")
+    // Android only
+    case .CHECK_SETTINGS_FAILURE:
+      return (code: "7", description: "Check settings request failure")
     default:
       return (code: "1000", description: "Default error")
     }

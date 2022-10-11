@@ -126,6 +126,7 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
         getStoredData();
         /* define options */
         setLocationOptions();
+        promise.resolve(null);
     }
 
     @ReactMethod
@@ -168,7 +169,7 @@ public class MobeyeGeolocationModule extends ReactContextBaseJavaModule implemen
             return;
         }
         resetLocationProvider();
-        promise.resolve(true);
+        promise.resolve(null);
     }
 
     @ReactMethod
