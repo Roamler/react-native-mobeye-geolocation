@@ -38,7 +38,7 @@ see the [example](https://github.com/Mobeye/react-native-mobeye-geolocation/blob
 
 ```javascript
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, PermissionsAndroid, Platform } from 'react-native';
 import Geolocation, { useLocation } from '@mobeye/react-native-geolocation';
 
 export const App = () => {
@@ -47,14 +47,37 @@ export const App = () => {
     const location = useLocation();
 
     useEffect(() => {
-        Geolocation.configuration(10, 500, 'BalancedPower');
+        Geolocation.configuration({
+            distanceFilter: 500,
+            desiredAccuracy: 'BalancedPower',
+            bufferSize: 10,
+        });
+    }, []);
+
+    useEffect(() => {
         if (Platform.OS === 'ios') {
-            Geolocation.checkIOSAuthorization().then((res) => {
-                setPermission(res);
+            Geolocation.checkIOSAuthorization().then((isGranted) => {
+                if (isGranted) {
+                    setPermission(isGranted);
+                } else {
+                    Geolocation.requestIOSAuthorization().then((status) => {
+                        setPermission(status === 'granted');
+                    });
+                }
             });
         } else {
-            PermissionsAndroid.check('android.permission.ACCESS_FINE_LOCATION').then((res) => {
-                setPermission(res);
+            PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION).then((isGranted) => {
+                if (isGranted) {
+                    setPermission(isGranted);
+                } else {
+                    PermissionsAndroid.requestMultiple([
+                        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+                    ]).then((statusArray) => {
+                        const status = statusArray[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION];
+                        setPermission(status === 'granted');
+                    });
+                }
             });
         }
     }, []);
@@ -80,16 +103,19 @@ export const App = () => {
 ## API
 
 -   **Types:**
+    -   [`LocationConfiguration`](#locationconfiguration)
     -   [`AccuracyLevel`](#accuracylevel)
     -   [`AccuracyAuthorization`](#accuracyauthorization)
     -   [`LocationProvidersStatus`](#locationprovidersstatus)
-    -   [`LocationConfiguration`](#locationconfiguration)
     -   [`Location`](#location)
-    -   [`Errors`](#errors)
+    -   [`LocationEventSuccess`](#locationeventsuccess)
+    -   [`LocationEventError`](#locationeventerror)
+    -   [`LocationEvent`](#locationevent)
 -   **Methods:**
     -   [`configure()`](#configure)
     -   [`start()`](#start)
     -   [`useLocation()`](#uselocation)
+    -   [`getLastLocations()`](#getlastlocations)
     -   [`setTemporaryConfiguration()`](#settemporaryconfiguration)
     -   [`revertTemporaryConfiguration()`](#reverttemporaryconfiguration)
     -   [`checkIOSauthorization()`](#checkiosauthorization)
@@ -97,6 +123,9 @@ export const App = () => {
     -   [`checkIOSAccuracyAuthorization()`](#checkiosaccuracyauthorization)
     -   [`getAndroidLocationProvidersStatus()`](#getandroidlocationprovidersstatus)
     -   [`checkAndroidLocationSettings()`](#checkandroidlocationsettings)
+-   **Events:**
+    -   [`LOCATION_UPDATED`](#location_updated)
+    -   [`Location_check`](#location_check)
 
 ### Types
 
@@ -154,24 +183,35 @@ Describe a computed location:
 | `time`      | `number`  | The time at which this location was determined. It is an Unix Time Stamp in seconds.                                                                                                                          |
 | `mock`      | `boolean` | Returns true if the Location came from a mock provider. Works only for Android, always return false on IOS                                                                                                    |
 
-#### `Errors`
+#### `LocationEventSuccess`
 
-You can encounter some errors that are described in this table:
+Describes a success new location event:
 
-| Code | Name                             | Description                                                   |
-| ---- | -------------------------------- | ------------------------------------------------------------- |
-| `1`  | `USER_REJECT_LOCATION`           | The user forbids the using of his geolocation.                |
-| `2`  | `NO_LOCATION_AVAILABLE`          | No locations available saved in the buffer.                   |
-| `3`  | `LOCATION_NOT_CONFIGURED`        | You must configure the service before employing some methods. |
-| `4`  | `INVALID_CONFIGURATION`          | The requested configuration is not valid.                     |
-| `5`  | `UNKNOWN_AUTHORIZATION_STATUS`   | Apple may add new authorizations that are unknown.            |
-| `6`  | `UNKNOWN_ACCURACY_AUTHORIZATION` | Apple may add new accuracy authorizations that are unknown.   |
+| Property  | Type                    | Description                           |
+| --------- | ----------------------- | ------------------------------------- |
+| `success` | `true`                  | To indicate that it's a success event |
+| `payload` | [`Location`](#location) | The new Location object               |
+
+#### `LocationEventError`
+
+**(iOS only)** Describes an error new location event:
+
+| Property  | Type                         | Description                                                                                                                                                           |
+| --------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `success` | `false`                      | To indicate that it's an error event                                                                                                                                  |
+| `payload` | `LocationError` (deprecated) | A number corresponding to an error (see end of [this page](https://developer.apple.com/documentation/corelocation/cllocationmanagerdelegate/1423786-locationmanager)) |
+
+#### `LocationEvent`
+
+Describes a new location event:
+
+He can be either a [`LocationEventSuccess`](#locationeventsuccess) or a [`LocationEventError`](#Locationeventerror) on ios, and only a [`LocationEventSuccess`](#locationeventsuccess) on Android.
 
 ### Methods
 
 #### `configure()`
 
-Configure the library with the given configuration and instantiate the provider service. You only need to supply the properties you want to change from the default values. Any other methods will not work if the service is not instantiated. This method can be called only once.
+Configure the library with the given configuration and instantiate the provider service. You only need to supply the properties you want to change from the [default](https://github.com/Mobeye/react-native-mobeye-geolocation/blob/master/src/defaultConfiguration.ts) values. Any other methods will not work if the service is not instantiated. This method can be called only once.
 
 _Example:_
 
@@ -185,7 +225,7 @@ Geolocation.configure({
 
 #### `start()`
 
-Start the service using options defined with [`configure()`](#configure). The module sends a `'LOCATION_UPDATED'` event when a new computed location has changed significantly. Locations are also computed in background.
+Start the service using options defined with [`configure()`](#configure).
 
 _Example:_
 
@@ -200,8 +240,6 @@ A React Hook which can be used to get access to the last computed location and t
 _Example:_
 
 ```javascript
-import { useLocation } from '@mobeye/react-native-geolocation';
-
 const YourComponent = () => {
     const location = useLocation();
 
@@ -268,7 +306,6 @@ const YourComponent = () => {
     const [permission, setPermission] = useState(false);
 
     useEffect(() => {
-        Geolocation.configure();
         if (Platform.OS === 'ios') {
             Geolocation.checkIOSAuthorization().then((status) => setPermission(status));
         }
@@ -282,11 +319,11 @@ const YourComponent = () => {
 };
 ```
 
-> :warning: In the futur, Apple may add new authorizations. In this case, the `Promise` will be rejected with the code error `5`. Do not hesitate to create a pull request to add the new authorization.
+> :warning: In the futur, Apple may add new authorizations. Do not hesitate to create a pull request to add the new authorization.
 
 #### `requestIOSAuthorization()`
 
-Requests the geolocation permission for ios. Returns a `Promise` that resolves to a [`PermissionStatus`](https://reactnative.dev/docs/permissionsandroid#result-strings-for-requesting-permissions). [`configure`](#configure) must be called before this method since the service will start on its own if the user set the geolocation permission.
+Requests the geolocation permission for ios. Returns a `Promise` that resolves to a [`PermissionStatus`](https://reactnative.dev/docs/permissionsandroid#result-strings-for-requesting-permissions).
 
 ```javascript
 import { useEffect, useState } from 'react';
@@ -338,7 +375,7 @@ const YourComponent = () => {
 
 #### `getAndroidLocationProvidersStatus()`
 
-Requests the geolocation status. Returns a `Promise` that resolves to a [`LocationProviderStatus`](#locationproviderstatus)
+Requests the location providers status. Returns a `Promise` that resolves to a [`LocationProviderStatus`](#locationproviderstatus)
 
 _Example:_
 
@@ -348,7 +385,7 @@ import { Platform } from 'react-native';
 import Geolocation, { LocationProvidersStatus } from '@mobeye/react-native-geolocation';
 
 const YourComponent = () => {
-    const [locationStatus, setLocationStatus] =
+    const [locationProvidersStatus, setLocationProvidersStatus] =
         useState <
         LocationProvidersStatus >
         {
@@ -358,14 +395,14 @@ const YourComponent = () => {
 
     useEffect(() => {
         if (Platform.OS === 'android') {
-            Geolocation.getAndroidLocationProvidersStatus().then((status) => setLocationStatus(status));
+            Geolocation.getAndroidLocationProvidersStatus().then((statuses) => setLocationProvidersStatus(statuses));
         }
     }, []);
 
     return (
         <View>
-            <Text>Is GPS location enabled? {locationStatus.isGPSLocationEnabled}</Text>
-            <Text>Is Network location enabled? {locationStatus.isNetworkLocationEnabled}</Text>
+            <Text>Is GPS location enabled? {locationProvidersStatus.isGPSLocationEnabled}</Text>
+            <Text>Is Network location enabled? {locationProvidersStatus.isNetworkLocationEnabled}</Text>
         </View>
     );
 };
@@ -373,12 +410,85 @@ const YourComponent = () => {
 
 #### `checkAndroidLocationSettings()`
 
-Requests to determine whether the location settings are enabled on android phones, if the settings must be changed then a dialog that prompts the user for permission to modify the location settings should be displayed and it returns a GeolocationError which is CHECK_SETTINGS_FAILURE when it fails. For more information please check this [link](https://developer.android.com/training/location/change-location-settings)
+Requests to determine whether the location settings are enabled on android phones. If the settings must be changed then a dialog that prompts the user for permission to modify the location settings should be displayed. It returns an error which when it fails. For more information please check this [link](https://developer.android.com/training/location/change-location-settings)
 
 _Example:_
 
 ```javascript
 Geolocation.checkAndroidLocationSettings().catch(console.log);
+```
+
+### Events
+
+#### `LOCATION_UPDATED`
+
+If [`useLocation()`](#uselocation) and [`getLastLocations()`](#getlastlocations) are not enough for you, you can subscribe to this event to be informed of each new location update.
+
+_Example:_
+
+```javascript
+import { LocationEvent, locationEmitter, getLastLocations, Location } from '@mobeye/react-native-geolocation';
+
+useEffect(() => {
+    /* get last known use position */
+    getLastLocations(1)
+        .then((lastLocations: Location[]) => {
+            const lastLocation = lastLocations[0];
+            lastLocation && console.log('Latitude', lastLocation.latitude);
+            lastLocation && console.log('Longitude', lastLocation.longitude);
+        })
+        .catch(console.log);
+
+    /* subscribe to the listener */
+    const subscription = locationEmitter.addListener('LOCATION_UPDATED', (result: LocationEvent) => {
+        if (result.success) {
+            location = result.payload;
+            console.log('Latitude', location.latitude);
+            console.log('Longitude', location.longitude);
+        } else {
+            console.log("Can't get location: " + result.payload);
+        }
+    });
+    return () => subscription.remove();
+}, []);
+```
+
+#### `Location_check`
+
+(**Android only**)  
+You can subscribe this event to follow location provider state changes.
+
+_Example:_
+
+```javascript
+import {
+    LocationProvidersStatus,
+    locationEmitter,
+    getAndroidLocationProvidersStatus,
+} from '@mobeye/react-native-geolocation';
+
+useEffect(() => {
+    if (Platform.OS === 'android') {
+        // update location providers status when app starts
+        getAndroidLocationProvidersStatus()
+            .then((locationProvidersStatus: LocationProvidersStatus) => {
+                console.log('isGPSLocationEnabled', locationProvidersStatus.isGPSLocationEnabled);
+                console.log('isNetworkLocationEnabled', locationProvidersStatus.isNetworkLocationEnabled);
+            })
+            .catch(console.log);
+
+        // keep listening to any location providers status while using app
+        const locationProviderListener = Geolocation.locationEmitter.addListener(
+            'Location_check',
+            (locationProvidersStatus: LocationProvidersStatus) => {
+                console.log('isGPSLocationEnabled', locationProvidersStatus.isGPSLocationEnabled);
+                console.log('isNetworkLocationEnabled', locationProvidersStatus.isNetworkLocationEnabled);
+            }
+        );
+        return () => locationProviderListener.remove();
+    }
+    return () => null;
+}, []);
 ```
 
 ### Example
