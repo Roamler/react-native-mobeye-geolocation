@@ -14,7 +14,7 @@ export interface GeolocationNativeModule extends NativeModule{
     /* configure the location service */
     configure: (
         configuration: LocationConfiguration
-    ) => Promise<boolean>;
+    ) => Promise<void>;
 
     /* start the location service */
     start: () => void;
@@ -25,7 +25,7 @@ export interface GeolocationNativeModule extends NativeModule{
     getLastLocations: (number: number) => Promise<string>;
 
     /* Set the provider to get the best location */
-    setTemporaryConfiguration: (configuration: LocationConfiguration) => Promise<boolean>;
+    setTemporaryConfiguration: (configuration: LocationConfiguration) => Promise<void>;
 
     /* Reset the provider to configure options */
     revertTemporaryConfiguration: () => void;

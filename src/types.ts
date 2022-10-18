@@ -13,7 +13,7 @@
 export enum LocationError {
     locationUnknown = 0, // simple error the service will keep trying
     denied = 1, // user unauthorized location update
-    headingFailure= 3, // heading could not be determined because of strong interference from nearby magnetic fields
+    headingFailure = 3, // heading could not be determined because of strong interference from nearby magnetic fields
 }
 
 /**

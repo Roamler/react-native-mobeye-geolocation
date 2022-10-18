@@ -2,9 +2,9 @@
 //
 // https://github.com/callstack/react-native-builder-bob/tree/main/packages/create-react-native-library
 
-def DEFAULT_COMPILE_SDK_VERSION = 28
-def DEFAULT_MIN_SDK_VERSION = 18
-def DEFAULT_TARGET_SDK_VERSION = 28
+def DEFAULT_COMPILE_SDK_VERSION = 31
+def DEFAULT_MIN_SDK_VERSION = 21
+def DEFAULT_TARGET_SDK_VERSION = 31
 
 buildscript {
     // The Android Gradle plugin is only required when opening the android folder stand-alone.
@@ -17,7 +17,9 @@ buildscript {
             mavenCentral()
         }
         dependencies {
-            classpath 'com.android.tools.build:gradle:7.0.4'
+            classpath 'com.android.tools.build:gradle:7.1.3'
+            classpath("com.facebook.react:react-native-gradle-plugin")
+            classpath("de.undercouch:gradle-download-task:5.0.1")
         }
     }
 }
@@ -51,23 +53,31 @@ android {
     }
 }
 
-repositories {
-    mavenLocal()
-    maven {
-        // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-        url "$rootDir/../node_modules/react-native/android"
+allprojects {
+    repositories {
+        maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url "$rootDir/../node_modules/react-native/android"
+        }
+        maven {
+            // Android JSC is installed from npm
+            url "$rootDir/../node_modules/jsc-android/dist"
+        }
+        mavenCentral {
+            // We don't want to fetch react-native from Maven Central as there are
+            // older versions over there.
+            content {
+                excludeGroup "com.facebook.react"
+            }
+        }
+        google()
+        maven { url 'https://www.jitpack.io' }
     }
-    maven {
-        // Android JSC is installed from npm
-        url "$rootDir/../node_modules/jsc-android/dist"
-    }
-    google()
-    mavenCentral()
 }
 
 dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'  // From node_modules
-    implementation 'com.google.code.gson:gson:2.8.8'
-    implementation 'com.google.android.gms:play-services-location:19.0.1'
+    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.google.android.gms:play-services-location:20.0.0'
 }

@@ -83,7 +83,7 @@ class MobeyeGeolocation: RCTEventEmitter {
       NotificationCenter.default.addObserver(self, selector:#selector(backgroundActivity(notification:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
       NotificationCenter.default.addObserver(self, selector:#selector(foregroundActivity(notification:)), name: UIApplication.willEnterForegroundNotification, object: nil)
 
-      resolve(true)
+      resolve(nil)
     } catch {
       let err = GeolocationError.INVALID_CONFIGURATION
       reject(err.info.code, err.info.description, nil)
@@ -163,7 +163,7 @@ class MobeyeGeolocation: RCTEventEmitter {
         reject(err.info.code, err.info.description, nil)
         return
     }
-    resolve(true)
+    resolve(nil)
   }
   
   /*

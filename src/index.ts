@@ -12,30 +12,37 @@ import {
     AccuracyAuthorization,
     Location,
     LocationConfiguration,
+    LocationError,
     LocationEvent,
     LocationProvidersStatus,
 } from './types';
 import { NativeEventEmitter, PermissionStatus, Platform } from 'react-native';
 import { useEffect, useState } from 'react';
 
-/* get native module */
-const { start, revertTemporaryConfiguration } = MobeyeGeolocation;
-
 /* init default configuration */
 const _configuration: LocationConfiguration = DEFAULT_CONFIGURATION;
+
 
 export function configure(configuration?: Partial<LocationConfiguration>): void {
     MobeyeGeolocation.configure({
         ..._configuration,
         ...configuration
-    });
+    }).catch(console.log);
+}
+
+export function start(): void {
+    MobeyeGeolocation.start();
 }
 
 export function setTemporaryConfiguration(configuration?: Partial<LocationConfiguration>): void {
     MobeyeGeolocation.setTemporaryConfiguration({
         ..._configuration,
         ...configuration
-    });
+    }).catch(console.log);
+}
+
+export function revertTemporaryConfiguration(): void {
+    MobeyeGeolocation.revertTemporaryConfiguration();
 }
 
 /**
@@ -110,17 +117,18 @@ export function useLocation(): Location {
 
     useEffect(() => {
         /* get last known use position */
-
         getLastLocations(1).then((res) => {
             res[0] && setLocation(res[0])
         }).catch(console.log);
-
-
 
         /* subscribe to the listener */
         const subscription = locationEmitter.addListener('LOCATION_UPDATED', (result: LocationEvent) => {
             if (result.success) {
                 setLocation(result.payload);
+            } else if (result.payload == LocationError.headingFailure) {
+                console.log("Can't get location because of strong interference from nearby magnetic fields")
+            } else if (result.payload == LocationError.denied) {
+                console.log("Can't get location because user unauthorized location update")
             }
         });
         return () => subscription.remove();
@@ -140,6 +148,7 @@ export default {
     setTemporaryConfiguration,
     revertTemporaryConfiguration,
     locationEmitter,
+    useLocation,
     getLastLocations,
     checkIOSAuthorization,
     requestIOSAuthorization,
