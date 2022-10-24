@@ -7,6 +7,11 @@ public enum GeolocationError {
     UNKNOWN_AUTHORIZATION_STATUT(5, "Unknown authorization status"), // iOS only
     UNKNOWN_ACCURACY_AUTHORIZATION(6, "Unknown accuracy authorization"), // iOS only
     CHECK_SETTINGS_FAILURE(7,"Check settings request failure"),
+    AUTHORIZATION_DENIED(8,"User unauthorized the location update"), // iOS only
+    HEADING_FAILURE(
+            9,
+            "Location not determined: too strong interference from nearby magnetic fields"
+    ), // iOS only
     DEFAULT_ERROR(1000, "Default error");
 
     private final int code;

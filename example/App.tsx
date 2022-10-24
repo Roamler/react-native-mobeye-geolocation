@@ -74,63 +74,24 @@ export default function App() {
     const [locations, setLocations] = useState<Location[]>([]);
     const location = useLocation();
 
-    const askPermission = () => {
-        if (Platform.OS === 'ios') {
-            Geolocation.requestIOSAuthorization();
-        } else {
-            /* For location permissions request, and starting from android 12+, we need to request
-             * both permissions, FINE and COARSE, in order to have access to user precise location */
-            PermissionsAndroid.requestMultiple([
-                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-                PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-            ]);
-        }
-    };
-
     /* listen the app state for background / foreground transition to check location authorizations */
     useEffect(() => {
-        const checkPermission = () => {
-            if (Platform.OS === 'ios') {
-                Geolocation.checkIOSAuthorization().then((isAuthorized: boolean) => {
-                    setPermission(isAuthorized);
-                });
-            } else {
-                // Checking only the coarse location permission is enough to know whether we have access to user location or not
-                PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION).then((isAuthorized) => {
-                    setPermission(isAuthorized);
-                });
-            }
-        };
-
-        const checkAccuracyAuthorization = () => {
-            if (Platform.OS === 'ios') {
-                Geolocation.checkIOSAccuracyAuthorization().then((acc: AccuracyAuthorization) => {
-                    setAccuracyAuthorization(acc);
-                });
-            } else {
-                /* Checking fine location permission will give us the information on whether the user has activated precise
-                location or not */
-                PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then((isAuthorized) => {
-                    const acc = isAuthorized ? 'FullAccuracy' : 'ReducedAccuracy';
-                    setAccuracyAuthorization(acc);
-                });
-            }
-        };
-
         const handleAppStateChange = (nextAppState: AppStateStatus) => {
             const prevAppState = appStateRef.current;
 
             if (prevAppState.match(/inactive|background/) && nextAppState === 'active') {
-                checkPermission();
-                checkAccuracyAuthorization();
+                Geolocation.checkAuthorization().then((isAuthorized: boolean) => setPermission(isAuthorized));
+                Geolocation.checkAccuracyAuthorization().then((acc: AccuracyAuthorization) =>
+                    setAccuracyAuthorization(acc)
+                );
             }
 
             appStateRef.current = nextAppState;
         };
 
         // check authorizations when app starts
-        checkPermission();
-        checkAccuracyAuthorization();
+        Geolocation.checkAuthorization().then((isAuthorized: boolean) => setPermission(isAuthorized));
+        Geolocation.checkAccuracyAuthorization().then((acc: AccuracyAuthorization) => setAccuracyAuthorization(acc));
         // keep listening to any location authorizations modification while using app
         const appStateListener = AppState.addEventListener('change', handleAppStateChange);
         return () => appStateListener.remove();
@@ -141,7 +102,8 @@ export default function App() {
         if (Platform.OS === 'android') {
             // update location providers status when app starts
             const updateProvidersLocationStatus = async () => {
-                const locationProvidersStatus: LocationProvidersStatus = await Geolocation.getAndroidLocationProvidersStatus();
+                const locationProvidersStatus: LocationProvidersStatus =
+                    await Geolocation.getAndroidLocationProvidersStatus();
                 setLocationProviderStatus(locationProvidersStatus);
             };
             updateProvidersLocationStatus().catch(console.log);
@@ -159,7 +121,7 @@ export default function App() {
     }, []);
 
     useEffect(() => {
-        Geolocation.configure(DEFAULT_CONFIGURATION);
+        Geolocation.configure(DEFAULT_CONFIGURATION).catch(console.log);
     }, []);
 
     useEffect(() => {
@@ -182,7 +144,7 @@ export default function App() {
                 </Text>
                 <Text style={styles.instructions}>Accuracy Authorization: {accuracyAuthorization || ' - '}</Text>
                 <View style={styles.buttons}>
-                    <Button title={'Ask location permission'} onPress={() => askPermission()} />
+                    <Button title={'Ask location permission'} onPress={() => Geolocation.requestAuthorization()} />
                 </View>
 
                 {Platform.OS === 'android' && (
@@ -226,7 +188,7 @@ export default function App() {
                                 distanceFilter: 10,
                                 updateInterval: 1000,
                             };
-                            Geolocation.setTemporaryConfiguration(newConf);
+                            Geolocation.setTemporaryConfiguration(newConf).catch(console.log);
                             setConfig({ ...DEFAULT_CONFIGURATION, ...newConf });
                         }}
                     />

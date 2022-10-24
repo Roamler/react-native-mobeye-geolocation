@@ -19,6 +19,8 @@ enum GeolocationError: Error {
   case UNKNOWN_AUTHORIZATION_STATUS
   case UNKNOWN_ACCURACY_AUTHORIZATION
   case CHECK_SETTINGS_FAILURE
+  case AUTHORIZATION_DENIED
+  case HEADING_FAILURE
 
   var info: (code: String, description: String) {
     switch self {
@@ -32,9 +34,14 @@ enum GeolocationError: Error {
       return (code: "5", description: "Unknown authorization status")
     case .UNKNOWN_ACCURACY_AUTHORIZATION:
       return (code: "6", description: "Unknown accuracy authorization")
-    // Android only
+    /* Android only
     case .CHECK_SETTINGS_FAILURE:
       return (code: "7", description: "Check settings request failure")
+    */
+    case .AUTHORIZATION_DENIED:
+      return (code: "8", description: "User unauthorized the location update")
+    case .HEADING_FAILURE:
+      return (code: "9", description: "Location not determined: too strong interference from nearby magnetic fields")
     default:
       return (code: "1000", description: "Default error")
     }
