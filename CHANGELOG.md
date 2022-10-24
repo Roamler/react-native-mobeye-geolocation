@@ -2,6 +2,19 @@
 
 Changelog of react-native-mobeye-geolocation.
 
+
+## 1.8.0 (2022-10-24)
+
+### Breaking
+
+- check and request authorizations methods work also for android ([97785ed](https://github.com/Mobeye/react-native-mobeye-geolocation/commit/97785ed2e85dc1ec9a5ca11b86d8acbd17430173))
+- improve LocationEvent error management, including LocationError type ([8569186](https://github.com/Mobeye/react-native-mobeye-geolocation/commit/8569186e21e52844430e455ffebf52ddffdbc1db))
+
+### Changes
+
+- configure & setTemporaryConfiguration return a promise ([d7c2d26](https://github.com/Mobeye/react-native-mobeye-geolocation/commit/d7c2d264dbf3edf702591900859821d073fc7e90))
+
+
 ## 1.7.0 (2022-10-18)
 
 ### Breaking
@@ -29,14 +42,12 @@ Changelog of react-native-mobeye-geolocation.
 
 ## 1.5.0 (2022-02-02)
 
-
 ### Changes
 
 - Replacing maven plugin by maven-publish plugin to support gradle version 7 and higher ([dddb3d4](https://github.com/Mobeye/react-native-mobeye-geolocation/commit/dddb3d4c39b8a4dbed4cedd982723e608ca1504c) *2022-01-28 13:38*)
 
 
 ## 1.4.0 (2022-01-20)
-
 
 ### Breaking
 
