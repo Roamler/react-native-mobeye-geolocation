@@ -23,22 +23,22 @@ import { useEffect, useState } from 'react';
 const _configuration: LocationConfiguration = DEFAULT_CONFIGURATION;
 
 
-export function configure(configuration?: Partial<LocationConfiguration>): void {
-    MobeyeGeolocation.configure({
+export function configure(configuration?: Partial<LocationConfiguration>): Promise<void> {
+    return MobeyeGeolocation.configure({
         ..._configuration,
         ...configuration
-    }).catch(console.log);
+    });
 }
 
 export function start(): void {
     MobeyeGeolocation.start();
 }
 
-export function setTemporaryConfiguration(configuration?: Partial<LocationConfiguration>): void {
-    MobeyeGeolocation.setTemporaryConfiguration({
+export function setTemporaryConfiguration(configuration?: Partial<LocationConfiguration>): Promise<void> {
+    return MobeyeGeolocation.setTemporaryConfiguration({
         ..._configuration,
         ...configuration
-    }).catch(console.log);
+    });
 }
 
 export function revertTemporaryConfiguration(): void {

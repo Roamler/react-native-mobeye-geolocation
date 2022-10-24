@@ -159,7 +159,7 @@ export default function App() {
     }, []);
 
     useEffect(() => {
-        Geolocation.configure(DEFAULT_CONFIGURATION);
+        Geolocation.configure(DEFAULT_CONFIGURATION).catch(console.log);
     }, []);
 
     useEffect(() => {
@@ -226,7 +226,7 @@ export default function App() {
                                 distanceFilter: 10,
                                 updateInterval: 1000,
                             };
-                            Geolocation.setTemporaryConfiguration(newConf);
+                            Geolocation.setTemporaryConfiguration(newConf).catch(console.log);
                             setConfig({ ...DEFAULT_CONFIGURATION, ...newConf });
                         }}
                     />

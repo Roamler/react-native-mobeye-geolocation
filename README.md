@@ -51,7 +51,7 @@ export const App = () => {
             distanceFilter: 500,
             desiredAccuracy: 'BalancedPower',
             bufferSize: 10,
-        });
+        }).catch(console.log);
     }, []);
 
     useEffect(() => {
@@ -211,7 +211,7 @@ He can be either a [`LocationEventSuccess`](#locationeventsuccess) or a [`Locati
 
 #### `configure()`
 
-Configure the library with the given configuration and instantiate the provider service. You only need to supply the properties you want to change from the [default](https://github.com/Mobeye/react-native-mobeye-geolocation/blob/master/src/defaultConfiguration.ts) values. Any other methods will not work if the service is not instantiated. This method can be called only once.
+Configure the library with the given configuration and instantiate the provider service. You only need to supply the properties you want to change from the [default](https://github.com/Mobeye/react-native-mobeye-geolocation/blob/master/src/defaultConfiguration.ts) values. Any other methods will not work if the service is not instantiated. This method can be called only once. Can return a rejected promise if your configuration is invalid. 
 
 _Example:_
 
@@ -220,7 +220,7 @@ Geolocation.configure({
     distanceFilter: 100,
     desiredAccuracy: 'BalancedPower',
     bufferSize: 10,
-});
+}).catch(console.log);
 ```
 
 #### `start()`
@@ -270,7 +270,7 @@ Geolocation.getLastLocations(10).then((locations) => {
 
 #### `setTemporaryConfiguration()`
 
-Sometime you may need to temporary change the accuracy level to have a better user tracking. This method changes on the fly your configuration (except the buffer size).
+Sometime you may need to temporary change the accuracy level to have a better user tracking. This method changes on the fly your configuration (except the buffer size). Can return a rejected promise if your configuration is invalid
 
 _Example:_
 
@@ -278,7 +278,7 @@ _Example:_
 Geolocation.setTemporaryConfiguration({
     distanceFilter: 20,
     desiredAccuracy: 'BestAccuracy',
-});
+}).catch(console.log);
 ```
 
 #### `revertTemporaryConfiguration()`
