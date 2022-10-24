@@ -15,7 +15,7 @@ import {
     LocationEvent,
     LocationProvidersStatus,
 } from './types';
-import { NativeEventEmitter, PermissionStatus, Platform } from 'react-native';
+import { NativeEventEmitter, PermissionsAndroid, PermissionStatus, Platform } from 'react-native';
 import { useEffect, useState } from 'react';
 
 /* init default configuration */
@@ -62,26 +62,49 @@ export function getLastLocations(n: number): Promise<[Location]> {
 }
 
 /**
- * Check location accuracy authorization for ios.
+ * Check location accuracy authorization.
  */
-export function checkIOSAccuracyAuthorization(): Promise<AccuracyAuthorization> {
-    return MobeyeGeolocation.checkAccuracyAuthorization();
+export function checkAccuracyAuthorization(): Promise<AccuracyAuthorization> {
+    if (Platform.OS === 'ios') {
+        return MobeyeGeolocation.checkAccuracyAuthorization();
+    } else {
+        /* Checking fine location permission will give us the information on whether the user has activated precise
+        location or not */
+        return PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then((isAuthorized) => {
+            return isAuthorized ? 'FullAccuracy' : 'ReducedAccuracy';
+        });
+    }
 }
 
 /**
- * Check location authorization for iOS.
- * To check for android just use AndroidPermissions
+ * Check location authorization.
  */
-export function checkIOSAuthorization(): Promise<boolean> {
-    return MobeyeGeolocation.checkPermission();
+export function checkAuthorization(): Promise<boolean> {
+    if (Platform.OS === 'ios') {
+        return MobeyeGeolocation.checkPermission();
+    } else {
+        // Checking only the coarse location permission is enough to know whether we have access to user location or not
+        return PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION);
+    }
 }
 
 /**
- * Request location authorization for iOS.
- * To request for android just use AndroidPermissions
+ * Request location authorization.
  */
-export function requestIOSAuthorization(): Promise<PermissionStatus> {
-    return MobeyeGeolocation.askForPermission();
+export function requestAuthorization(): Promise<PermissionStatus> {
+    if (Platform.OS === 'ios') {
+        return MobeyeGeolocation.askForPermission();
+    } else {
+        /* For location permissions request, and starting from android 12+, we need to request
+         * both permissions, FINE and COARSE, in order to have access to user precise location */
+        return PermissionsAndroid.requestMultiple([
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+        ]).then((statusArray) => {
+            /* In order to check the location permission, it is enough to check the coarse permission status */
+            return statusArray[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION];
+        });
+    }
 }
 
 /* Get the location status for the GPS provider and the Network provider on Android */
@@ -146,9 +169,9 @@ export default {
     locationEmitter,
     useLocation,
     getLastLocations,
-    checkIOSAuthorization,
-    requestIOSAuthorization,
-    checkIOSAccuracyAuthorization,
+    checkAuthorization,
+    requestAuthorization,
+    checkAccuracyAuthorization,
     getAndroidLocationProvidersStatus,
     checkAndroidLocationSettings,
 };

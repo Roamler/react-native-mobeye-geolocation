@@ -55,31 +55,15 @@ export const App = () => {
     }, []);
 
     useEffect(() => {
-        if (Platform.OS === 'ios') {
-            Geolocation.checkIOSAuthorization().then((isGranted) => {
-                if (isGranted) {
-                    setPermission(isGranted);
-                } else {
-                    Geolocation.requestIOSAuthorization().then((status) => {
-                        setPermission(status === 'granted');
-                    });
-                }
-            });
-        } else {
-            PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION).then((isGranted) => {
-                if (isGranted) {
-                    setPermission(isGranted);
-                } else {
-                    PermissionsAndroid.requestMultiple([
-                        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-                        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-                    ]).then((statusArray) => {
-                        const status = statusArray[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION];
-                        setPermission(status === 'granted');
-                    });
-                }
-            });
-        }
+        Geolocation.checkAuthorization().then((isGranted) => {
+            if (isGranted) {
+                setPermission(isGranted);
+            } else {
+                Geolocation.requestAuthorization().then((status) => {
+                    setPermission(status === 'granted');
+                });
+            }
+        });
     }, []);
 
     useEffect(() => {
@@ -118,9 +102,9 @@ export const App = () => {
     -   [`getLastLocations()`](#getlastlocations)
     -   [`setTemporaryConfiguration()`](#settemporaryconfiguration)
     -   [`revertTemporaryConfiguration()`](#reverttemporaryconfiguration)
-    -   [`checkIOSauthorization()`](#checkiosauthorization)
-    -   [`requestIOSauthorization()`](#requestiosauthorization)
-    -   [`checkIOSAccuracyAuthorization()`](#checkiosaccuracyauthorization)
+    -   [`checkauthorization()`](#checkauthorization)
+    -   [`requestauthorization()`](#requestauthorization)
+    -   [`checkAccuracyAuthorization()`](#checkaccuracyauthorization)
     -   [`getAndroidLocationProvidersStatus()`](#getandroidlocationprovidersstatus)
     -   [`checkAndroidLocationSettings()`](#checkandroidlocationsettings)
 -   **Events:**
@@ -211,7 +195,7 @@ He can be either a [`LocationEventSuccess`](#locationeventsuccess) or a [`Locati
 
 #### `configure()`
 
-Configure the library with the given configuration and instantiate the provider service. You only need to supply the properties you want to change from the [default](https://github.com/Mobeye/react-native-mobeye-geolocation/blob/master/src/defaultConfiguration.ts) values. Any other methods will not work if the service is not instantiated. This method can be called only once. Can return a rejected promise if your configuration is invalid. 
+Configure the library with the given configuration and instantiate the provider service. You only need to supply the properties you want to change from the [default](https://github.com/Mobeye/react-native-mobeye-geolocation/blob/master/src/defaultConfiguration.ts) values. Any other methods will not work if the service is not instantiated. This method can be called only once. Can return a rejected promise if your configuration is invalid.
 
 _Example:_
 
@@ -291,9 +275,9 @@ _Example_
 Geolocation.revertTemporaryConfiguration();
 ```
 
-#### `checkIOSAuthorization()`
+#### `checkAuthorization()`
 
-Return a `Promise` that gets the location permission status as `boolean` for ios. For android, you can use [`PermissionAndroid`](https://reactnative.dev/docs/permissionsandroid).
+Return a `Promise` that gets the location permission status as `boolean`.
 
 _Example:_
 
@@ -306,9 +290,7 @@ const YourComponent = () => {
     const [permission, setPermission] = useState(false);
 
     useEffect(() => {
-        if (Platform.OS === 'ios') {
-            Geolocation.checkIOSAuthorization().then((status) => setPermission(status));
-        }
+        Geolocation.checkAuthorization().then((status) => setPermission(status));
     }, []);
 
     return (
@@ -321,9 +303,9 @@ const YourComponent = () => {
 
 > :warning: In the futur, Apple may add new authorizations. Do not hesitate to create a pull request to add the new authorization.
 
-#### `requestIOSAuthorization()`
+#### `requestAuthorization()`
 
-Requests the geolocation permission for ios. Returns a `Promise` that resolves to a [`PermissionStatus`](https://reactnative.dev/docs/permissionsandroid#result-strings-for-requesting-permissions).
+Requests the geolocation permission. Returns a `Promise` that resolves to a [`PermissionStatus`](https://reactnative.dev/docs/permissionsandroid#result-strings-for-requesting-permissions).
 
 ```javascript
 import { useEffect, useState } from 'react';
@@ -334,9 +316,7 @@ const YourComponent = () => {
     const [status, setStatus] = useState(PermissionStatus.denied);
 
     useEffect(() => {
-        if (Platform.OS === 'ios') {
-            Geolocation.requestIOSAuthorization().then((status) => setStatus(status));
-        }
+        Geolocation.requestAuthorization().then((status) => setStatus(status));
     }, []);
 
     return (
@@ -347,9 +327,9 @@ const YourComponent = () => {
 };
 ```
 
-#### `checkIOSAccuracyAuthorization()`
+#### `checkAccuracyAuthorization()`
 
-Requests the geolocation accuracy authorization on ios devices. Returns a `Promise` that resolves to a [`AccuracyAuthorization`](#accuracyauthorization)
+Requests the geolocation accuracy authorization. Returns a `Promise` that resolves to a [`AccuracyAuthorization`](#accuracyauthorization)
 
 ```javascript
 import { useEffect, useState } from 'react';
@@ -360,9 +340,7 @@ const YourComponent = () => {
     const [status, setStatus] = useState(null);
 
     useEffect(() => {
-        if (Platform.OS === 'ios') {
-            Geolocation.checkIOSAccuracyAuthorization().then((status) => setStatus(status));
-        }
+        Geolocation.checkAccuracyAuthorization().then((status) => setStatus(status));
     }, []);
 
     return (
