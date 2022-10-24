@@ -371,8 +371,27 @@ extension MobeyeGeolocation: CLLocationManagerDelegate {
   
   /**
    Callback if the location computing failed.
+    see https://developer.apple.com/documentation/corelocation/cllocationmanagerdelegate/1423786-locationmanager
    */
   func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-    self.sendEvent(withName: "LOCATION_UPDATED", body: ["success": false, "payload": error])
+      if let clErr = error as? CLError {
+          switch clErr {
+          case CLError.locationUnknown:
+              // From doc: "In such a situation, you can simply ignore the error and wait for a new event"
+              break
+          case CLError.denied:
+              self.sendEvent(
+                withName: "LOCATION_UPDATED",
+                body: ["success": false, "payload": GeolocationError.AUTHORIZATION_DENIED.info.description]
+              )
+          case CLError.headingFailure:
+              self.sendEvent(
+                withName: "LOCATION_UPDATED",
+                body: ["success": false, "payload": GeolocationError.HEADING_FAILURE.info.description]
+              )
+          default:
+              break
+          }
+      }
   }
 }

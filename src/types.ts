@@ -8,15 +8,6 @@
  */
 
 /**
- * iOS location error, android seems to never throw errors
- */
-export enum LocationError {
-    locationUnknown = 0, // simple error the service will keep trying
-    denied = 1, // user unauthorized location update
-    headingFailure = 3, // heading could not be determined because of strong interference from nearby magnetic fields
-}
-
-/**
  * Accuracy authorization levels
  */
 export type AccuracyAuthorization = "FullAccuracy" | "ReducedAccuracy";
@@ -48,7 +39,7 @@ export type LocationEventSuccess = {
 
 export type LocationEventError = {
     success: false;
-    payload: LocationError;
+    payload: string;
 }
 
 export type LocationEvent = LocationEventSuccess | LocationEventError;

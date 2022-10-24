@@ -12,7 +12,6 @@ import {
     AccuracyAuthorization,
     Location,
     LocationConfiguration,
-    LocationError,
     LocationEvent,
     LocationProvidersStatus,
 } from './types';
@@ -22,11 +21,10 @@ import { useEffect, useState } from 'react';
 /* init default configuration */
 const _configuration: LocationConfiguration = DEFAULT_CONFIGURATION;
 
-
 export function configure(configuration?: Partial<LocationConfiguration>): Promise<void> {
     return MobeyeGeolocation.configure({
         ..._configuration,
-        ...configuration
+        ...configuration,
     });
 }
 
@@ -37,7 +35,7 @@ export function start(): void {
 export function setTemporaryConfiguration(configuration?: Partial<LocationConfiguration>): Promise<void> {
     return MobeyeGeolocation.setTemporaryConfiguration({
         ..._configuration,
-        ...configuration
+        ...configuration,
     });
 }
 
@@ -54,10 +52,9 @@ export function getLastLocations(n: number): Promise<[Location]> {
         const locations: [Location] = JSON.parse(result);
 
         if (Platform.OS === 'ios') {
-            locations.forEach(location => {
-                location.mock = false
-            })
-
+            locations.forEach((location) => {
+                location.mock = false;
+            });
         }
 
         return locations;
@@ -89,7 +86,7 @@ export function requestIOSAuthorization(): Promise<PermissionStatus> {
 
 /* Get the location status for the GPS provider and the Network provider on Android */
 export function getAndroidLocationProvidersStatus(): Promise<LocationProvidersStatus> {
-   return MobeyeGeolocation.getLocationProvidersStatus();
+    return MobeyeGeolocation.getLocationProvidersStatus();
 }
 
 /* Check if location settings are coherent with user options and propose a resolution popup if it's possible on Android.
@@ -106,7 +103,6 @@ export const locationEmitter = new NativeEventEmitter(MobeyeGeolocation);
  * A React Hook which updates when the location significantly changes.
  */
 export function useLocation(): Location {
-
     const [location, setLocation] = useState<Location>({
         latitude: -1,
         longitude: -1,
@@ -117,25 +113,25 @@ export function useLocation(): Location {
 
     useEffect(() => {
         /* get last known use position */
-        getLastLocations(1).then((res) => {
-            res[0] && setLocation(res[0])
-        }).catch(console.log);
+        getLastLocations(1)
+            .then((res) => {
+                res[0] && setLocation(res[0]);
+            })
+            .catch(console.log);
 
         /* subscribe to the listener */
         const subscription = locationEmitter.addListener('LOCATION_UPDATED', (result: LocationEvent) => {
             if (result.success) {
                 setLocation(result.payload);
-            } else if (result.payload == LocationError.headingFailure) {
-                console.log("Can't get location because of strong interference from nearby magnetic fields")
-            } else if (result.payload == LocationError.denied) {
-                console.log("Can't get location because user unauthorized location update")
+            } else {
+                console.log(result.payload);
             }
         });
         return () => subscription.remove();
     }, []);
 
     if (Platform.OS === 'ios') {
-        location.mock = false
+        location.mock = false;
     }
 
     return location;
