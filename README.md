@@ -1,6 +1,6 @@
 # React Native Mobeye Geolocation
 
-React Native Geolocation API for Android and iOS. It allows to get geolocation as well in background as in foreground.
+React Native Geolocation API for Android and iOS. It allows to get geolocation in foreground (and probably in background but background is no longer maintained).
 
 <p align="center" >
   <a href="https://www.npmjs.com/package/@mobeye/react-native-geolocation"><img src="https://img.shields.io/npm/dm/@mobeye/react-native-geolocation.svg?style=flat-square" alt="NPM downloads"></a>
